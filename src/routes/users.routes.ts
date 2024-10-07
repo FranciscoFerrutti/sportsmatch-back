@@ -15,7 +15,7 @@ export default class UsersRoutes {
 
     public init(): void {
         this.router.use(urlencoded({ extended: true }));
-        this.router.use(cors());
+        // this.router.use(cors());
 
         this.router.get('/', this.controller.getUsers);
         this.router.get('/:userId', this.controller.getUser);
