@@ -14,8 +14,8 @@ import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
 class AuthService {
     private static instance: AuthService;
     private userService: UsersService;
-    private jwtKey: string;
-    private accessTokenExpireTime: string;
+    private readonly jwtKey: string;
+    private readonly accessTokenExpireTime: string;
 
     static getInstance() {
         if (!AuthService.instance) AuthService.instance = new AuthService();
@@ -57,7 +57,7 @@ class AuthService {
         const userAuth = await AuthPersistence.getAuthByEmail(email);
         if (!userAuth) throw new NotFoundException('User');
 
-        if (!validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
+        if (!await validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
 
         const user = await UserPersistence.getUserByEmail(email);
         if (!user) throw new NotFoundException('User');
@@ -101,10 +101,10 @@ export const PBKDF2_HASH = process.env.PBKDF2_HASH ?? '';
 export const validatePassword = async (maybePassword: string, passwordHash: string) => {
     const derKey: Buffer = await pbkdf2(maybePassword, PBKDF2_HASH, 1000, 32, 'sha512');
     return derKey.toString() === passwordHash;
-}
+};
 
 export const hashPassword = async (password: string) => {
-    return await pbkdf2(password, PBKDF2_HASH, 1000, 32, 'sha512');
+    return pbkdf2(password, PBKDF2_HASH, 1000, 32, 'sha512');
 }
 
 export default AuthService;
