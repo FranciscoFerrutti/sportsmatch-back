@@ -9,6 +9,7 @@ import EventsRoutes from './routes/events.routes';
 import initializeSwagger from './utils/swaggerDocumentation/swagger.main';
 import './database/connection';
 import AuthRoutes from './routes/auth.routes';
+import ClubAuthRoutes from "./routes/clubAuth.routes";
 
 class App {
     public app: Application;
@@ -59,6 +60,7 @@ class App {
         this.app.use('/users', new UsersRoutes().router);
         this.app.use('/events', new EventsRoutes().router);
         this.app.use('/auth', new AuthRoutes().router);
+        this.app.use('/clubauth', new ClubAuthRoutes().router);
     }
 
     private initializeSwaggerApp(): void {
