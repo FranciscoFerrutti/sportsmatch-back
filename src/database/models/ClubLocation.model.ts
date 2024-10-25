@@ -1,4 +1,3 @@
-// ClubLocation.model.ts
 import {
     Column, Model, Table, DataType, ForeignKey,
     BelongsTo, PrimaryKey, AutoIncrement,
@@ -27,9 +26,18 @@ export default class ClubLocation extends Model {
     @Column(DataType.STRING(8))
     geohash!: string;
 
+    @Column(DataType.STRING(256))
+    address!: string;
+
+    @Column(DataType.DECIMAL)
+    latitude!: number;
+
+    @Column(DataType.DECIMAL)
+    longitude!: number;
+
     @CreatedAt
-    createdAt!: Date;
+    created_at!: Date;
 
     @UpdatedAt
-    updatedAt!: Date;
+    updated_at!: Date;
 }

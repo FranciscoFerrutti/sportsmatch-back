@@ -1,11 +1,17 @@
 // Club.model.ts
 import {
-    Column, Model, Table, DataType, HasMany,
+    Column, Model, Table, DataType, HasOne,
     PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Unique
 } from "sequelize-typescript";
 import ClubLocation from "./ClubLocation.model";
 
-
+export interface IClubDetail {
+    id: number;
+    name: string;
+    phone_number: string;
+    email: string;
+    locations: string[];
+}
 export interface IClubAttributes {
     id?: number;
     name: string;
@@ -44,8 +50,8 @@ export default class Club extends Model<IClubAttributes> {
     @Column(DataType.STRING)
     description?: string;
 
-    @HasMany(() => ClubLocation)
-    locations!: ClubLocation[];
+    @HasOne(() => ClubLocation)
+    location!: ClubLocation;
 
     @CreatedAt
     created_at!: Date;
