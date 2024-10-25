@@ -5,7 +5,7 @@ import geohash from 'ngeohash';
 
 class ClubLocationPersistence {
     static async UpdateClubLocation(
-        clubId: string,
+        clubId: number,
         latitude: number,
         longitude: number,
         address: string,
@@ -13,25 +13,28 @@ class ClubLocationPersistence {
     ): Promise<ClubLocation> {
 
         const geohashString = geohash.encode(latitude, longitude, 8);
+        console.log(geohashString)
 
-        // Find existing club location
-        const existingLocation = await ClubLocation.findOne({ where: { clubId } });
+        const existingLocation = await ClubLocation.findOne({ where: { club_id: clubId } });
 
         if (existingLocation) {
-            // Update existing location
             await existingLocation.update(
                 { geohash: geohashString, address, latitude, longitude },
                 { transaction }
             );
             return existingLocation;
         } else {
-            // Create new location
             const newLocation = await ClubLocation.create(
-                { clubId, geohash: geohashString, address, latitude, longitude },
+                { club_id: clubId, geohash: geohashString, address, latitude, longitude },
                 { transaction }
             );
             return newLocation;
         }
+    }
+
+    static async getAllLocations(): Promise<ClubLocation[]>{
+        const clubs = await ClubLocation.findAll();
+        return clubs;
     }
 }
 

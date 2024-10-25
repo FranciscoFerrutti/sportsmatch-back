@@ -18,7 +18,7 @@ export default class ClubLocation extends Model {
 
     @ForeignKey(() => Club)
     @Column(DataType.INTEGER)
-    clubId!: number;
+    club_id!: number;
 
     @BelongsTo(() => Club)
     club!: Club;

@@ -67,9 +67,14 @@ class ClubService {
         // }
     // }
 
-    public async updateLocation(userId: string, latitude: number, longitude: number, address: string): Promise<void> {
+    public async updateLocation(userId: number, latitude: number, longitude: number, address: string): Promise<void> {
         const newLocation = ClubLocationPersistence.UpdateClubLocation(userId, latitude, longitude, address);
     }
+
+    public async getLocs(): Promise<any> {
+        return await ClubLocationPersistence.getAllLocations();
+    }
+
 }
 
 export default ClubService;

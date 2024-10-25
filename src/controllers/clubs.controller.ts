@@ -101,19 +101,19 @@ class ClubsController{
         clubId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        phoneNumber: Joi.string().optional(),
-        location: Joi.string().optional(),
+        latitude: Joi.number(),
+        longitude: Joi.number(),
+        address: Joi.string(),
     }))
     @HttpRequestInfo("/clubs/:clubId/location", HTTP_METHODS.PUT)
     public async updateLocation(req: Request, res: Response, next: NextFunction) {
-        const userIdPath = req.params.clubId;
-        // const { latitude, longitude, address } = req.body;
-        const userId = req.user.id;
+        const userIdPath = Number(req.params.clubId);
+        const { latitude, longitude, address } = req.body;
+        const userId = Number(req.user.id);
 
         try {
             if (userIdPath !== userId) throw new Error("User can't update another user");
-            // console.log(latitude,longitude,address)
-            // await this.clubService.updateLocation(userId, latitude, longitude, address);
+            await this.clubService.updateLocation(userId, latitude, longitude, address);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);

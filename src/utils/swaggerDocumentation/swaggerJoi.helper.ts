@@ -38,7 +38,7 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
       const rules = joiParameter.describe().rules;
       addRules(rules, bodySchema.properties[key]);
 
-      if (flags.presence === 'required') {
+      if (flags?.presence === 'required') {
         bodySchema.required.push(key);
       }
     });
