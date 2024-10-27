@@ -5,7 +5,8 @@ import {SwaggerEndpointBuilder} from "../utils/swaggerDocumentation/SwaggerEndpo
 import {HttpRequestInfo, validateBody, validateParams} from "../middlewares/validation.middleware";
 import {HTTP_METHODS, HTTP_STATUS} from "../constants/http.constants";
 import {NextFunction, Request, Response} from "express";
-import Joi from "joi";
+import Joi, {options} from "joi";
+import {LOCATION_COORDINATES} from "../constants/neighbourhoods.constants";
 
 @autobind
 class ClubsController{
@@ -101,9 +102,9 @@ class ClubsController{
         clubId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        latitude: Joi.number(),
-        longitude: Joi.number(),
-        address: Joi.string(),
+        latitude: Joi.number().required(),
+        longitude: Joi.number().required(),
+        address: Joi.string().required(),
     }))
     @HttpRequestInfo("/clubs/:clubId/location", HTTP_METHODS.PUT)
     public async updateLocation(req: Request, res: Response, next: NextFunction) {
@@ -115,6 +116,32 @@ class ClubsController{
             if (userIdPath !== userId) throw new Error("User can't update another user");
             await this.clubService.updateLocation(userId, latitude, longitude, address);
             res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                }
+            }
+        })
+        .build())
+    @validateParams(Joi.object({
+        location: Joi.string().valid(...Object.keys(LOCATION_COORDINATES)),
+        radius: Joi.number().optional(),
+    }))
+    @HttpRequestInfo("/clubs/:location", HTTP_METHODS.GET)
+    public async getNearClubs(req: Request, res: Response, next: NextFunction) {
+        const location = req.params.location;
+        const radius = Number(req.query.radius);
+        try {
+            const clubs = await this.clubService.getNearClubs(location, radius);
+            res.status(HTTP_STATUS.OK).send(clubs);
         } catch (err) {
             next(err);
         }

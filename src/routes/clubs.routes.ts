@@ -15,7 +15,7 @@ export default class ClubsRoutes{
     private init() {
         this.router.use(urlencoded({ extended: true }));
 
-        // this.router.get('/:location', this.controller.getClubs);
+        this.router.get('/:location', this.controller.getNearClubs);
         this.router.get('/', this.controller.getClubs);
         this.router.get('/:clubId', this.controller.getClub);
         this.router.put('/:clubId', clubAuthMiddleware, this.controller.updateClub);

@@ -9,6 +9,7 @@ import User from "../database/models/User.model";
 import UserLocationPersistence from "../database/persistence/userLocation.persistence";
 import ClubLocationPersistence from "../database/persistence/clubLocation.persistence";
 
+const default_radius = 20;
 
 class ClubService {
     private static instance: ClubService;
@@ -73,6 +74,12 @@ class ClubService {
 
     public async getLocs(): Promise<any> {
         return await ClubLocationPersistence.getAllLocations();
+    }
+
+    public async getNearClubs(location: string, radius?: number): Promise<any> {
+        if(radius)
+            return await ClubLocationPersistence.getNearLocations(location, radius);
+        return await ClubLocationPersistence.getNearLocations(location, default_radius);
     }
 
 }

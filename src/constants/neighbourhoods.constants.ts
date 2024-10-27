@@ -1,4 +1,8 @@
-const LOCATION_COORDINATES = {
+interface LocationCoordinates {
+    [key: string]: { latitude: number; longitude: number };
+}
+
+export const LOCATION_COORDINATES: LocationCoordinates = {
     'Chacarita': { latitude: -34.58608564947866, longitude: -58.453972204344325 },
     'Paternal': { latitude: -34.595813687864265, longitude: -58.47098839443729 },
     'Villa Crespo': { latitude: -34.59461989561072, longitude: -58.44269361172921 },
