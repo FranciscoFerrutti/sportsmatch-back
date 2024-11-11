@@ -1,9 +1,11 @@
 // Club.model.ts
 import {
     Column, Model, Table, DataType, HasOne,
-    PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Unique
+    PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Unique, HasMany
 } from "sequelize-typescript";
 import ClubLocation from "./ClubLocation.model";
+import Field from "./Field.model"; // Import the Field model
+
 
 export interface IClubDetail {
     id: number;
@@ -52,6 +54,9 @@ export default class Club extends Model<IClubAttributes> {
 
     @HasOne(() => ClubLocation)
     location!: ClubLocation;
+
+    @HasMany(() => Field)
+    fields!: Field[];
 
     @CreatedAt
     created_at!: Date;
