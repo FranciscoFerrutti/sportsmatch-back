@@ -42,15 +42,32 @@ class ClubLocationPersistence {
 
     static async getNearLocations(location: string, radius: number): Promise<ClubLocation[]> {
         const { latitude, longitude } = LOCATION_COORDINATES[location];
-        const userGeohash = geohash.encode(latitude, longitude, 6);
-        console.log(location, userGeohash)
+        
+        // Calculate the bounding box for the given radius
+        const kmPerLat = 111.32; // Approximate km per degree of latitude
+        const kmPerLon = Math.cos(this.toRadians(latitude)) * 111.32;
+        
+        const latChange = radius / kmPerLat;
+        const lonChange = radius / kmPerLon;
+        
+        const minLat = latitude - latChange;
+        const maxLat = latitude + latChange;
+        const minLon = longitude - lonChange;
+        const maxLon = longitude + lonChange;
 
-        const neighbors = geohash.neighbors(userGeohash);
-
+        // Get all locations within the bounding box
         const locations = await ClubLocation.findAll({
-            where: Sequelize.literal(`substring("ClubLocation"."geohash", 1, 6) IN ('${geohash}', '${neighbors.join("','")}')`)
+            where: {
+                latitude: {
+                    [Op.between]: [minLat, maxLat]
+                },
+                longitude: {
+                    [Op.between]: [minLon, maxLon]
+                }
+            }
         });
 
+        // Filter locations by exact distance using haversine formula
         const filteredLocations = locations.filter(loc => {
             const distance = this.haversineDistance(
                 latitude,
