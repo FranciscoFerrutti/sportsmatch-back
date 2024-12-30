@@ -5,21 +5,12 @@ import {
 } from "sequelize-typescript";
 import Club from "./Club.model"; // Import the Club model
 
-export interface IFieldAttributes {
-    id?: number;
-    name: string;
-    description?: string;
-    cost_per_minute: number;
-    capacity: number;
-    club_id: number;
-}
-
 @Table({
     timestamps: true,
     tableName: 'fields',
     modelName: 'Field'
 })
-export default class Field extends Model<IFieldAttributes> {
+export default class Field extends Model {
     @PrimaryKey
     @AutoIncrement
     @Column(DataType.INTEGER)
