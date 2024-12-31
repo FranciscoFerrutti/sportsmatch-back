@@ -26,7 +26,7 @@ export default class Availability extends Model {
         type: DataType.DATEONLY,
         comment: 'Format: YYYY-MM-DD'
     })
-    date!: Date;
+    availability_date!: Date;
 
     @Column({
         allowNull: false,
