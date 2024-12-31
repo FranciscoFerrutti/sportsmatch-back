@@ -1,9 +1,10 @@
 // Field.model.ts
 import {
     Column, Model, Table, DataType, ForeignKey, BelongsTo,
-    PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt
+    PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, HasMany
 } from "sequelize-typescript";
 import Club from "./Club.model"; // Import the Club model
+import Availability from "./Availability.model";
 
 @Table({
     timestamps: true,
@@ -40,4 +41,7 @@ export default class Field extends Model {
 
     @UpdatedAt
     updated_at!: Date;
+
+    @HasMany(() => Availability)
+    availabilities!: Availability[];
 }
