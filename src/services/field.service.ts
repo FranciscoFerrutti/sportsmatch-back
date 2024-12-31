@@ -6,14 +6,14 @@ import FieldPersistence from "../database/persistence/field.persistence";
 import Field from "../database/models/Field.model";
 
 class FieldService{
-    private static readonly instance: FieldService;
+    private static instance: FieldService;
 
-    private constructor() {
+    static getInstance() {
+        if (!FieldService.instance) FieldService.instance = new FieldService();
+        return FieldService.instance;
     }
 
-    public static getInstance(): FieldService {
-        if (!this.instance) return new FieldService();
-        return this.instance;
+    private constructor() {
     }
 
     public async getFields(clubId: string): Promise<any> {

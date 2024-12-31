@@ -5,7 +5,9 @@ import {HTTP_METHODS, HTTP_STATUS} from "../constants/http.constants";
 import {NextFunction, Request, Response} from "express";
 import Joi from "joi";
 import FieldService from "../services/field.service";
+import {autobind} from "core-decorators";
 
+@autobind
 class FieldsController{
     private readonly fieldService: FieldService;
 
@@ -116,7 +118,7 @@ class FieldsController{
         const fieldId = req.params.fieldId
 
         try {
-            await this.fieldService.removeField(ownerId, fieldId);
+            await this.fieldService.removeField(fieldId, ownerId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);

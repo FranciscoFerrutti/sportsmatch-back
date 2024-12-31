@@ -14,7 +14,7 @@ export default class FieldsRoutes{
     private init(){
         this.router.use(urlencoded({ extended: true }));
 
-        this.router.put('/', clubAuthMiddleware, this.controller.postField)
+        this.router.post('/', clubAuthMiddleware, this.controller.postField)
         this.router.get('/:clubId', this.controller.getFields)
         this.router.put('/:fieldId', clubAuthMiddleware,this.controller.updateField)
         this.router.delete('/:fieldId', clubAuthMiddleware, this.controller.deleteField)
