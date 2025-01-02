@@ -95,4 +95,15 @@ export default class TimeSlotsService {
         await TimeSlotsService.checkFieldOwnership(fieldId, clubId);
         return await this.persistence.deleteTimeSlot(parseInt(fieldId), parseInt(slotId));
     }
+
+    async updateSlotStatus(fieldId: string, slotId: string, clubId: string, slotStatus: SlotStatus) {
+        await TimeSlotsService.checkFieldOwnership(fieldId, clubId);
+        
+        const slot = await this.persistence.findSlotById(parseInt(fieldId), parseInt(slotId));
+        if (!slot) {
+            throw new NotFoundException("TimeSlot");
+        }
+
+        return await this.persistence.updateSlotStatus(slot, slotStatus);
+    }
 } 

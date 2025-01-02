@@ -182,6 +182,54 @@ class TimeSlotsController {
             next(error);
         }
     }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                    properties: {
+                        id: { type: "number" },
+                        fieldId: { type: "number" },
+                        availabilityDate: { type: "string", format: "date" },
+                        startTime: { type: "string", format: "time" },
+                        endTime: { type: "string", format: "time" },
+                        slotStatus: { 
+                            type: "string", 
+                            enum: ["available", "booked", "maintenance"],
+                            description: "Current status of the time slot"
+                        }
+                    }
+                }
+            }
+        })
+        .build())
+    @validateParams(Joi.object({
+        fieldId: Joi.number().min(1).required(),
+        slotId: Joi.number().min(1).required()
+    }))
+    @validateBody(Joi.object({
+        slotStatus: Joi.string().valid(...Object.values(SlotStatus)).required()
+    }))
+    @HttpRequestInfo("/fields/:fieldId/availability/:slotId/status", HTTP_METHODS.PATCH)
+    public async updateSlotStatus(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { fieldId, slotId } = req.params;
+            const clubId = req.user.id;
+            const { slotStatus } = req.body;
+            
+            const updatedSlot = await this.service.updateSlotStatus(
+                fieldId,
+                slotId,
+                clubId,
+                slotStatus
+            );
+            res.status(HTTP_STATUS.OK).json(updatedSlot);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default TimeSlotsController;

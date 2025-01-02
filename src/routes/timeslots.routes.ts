@@ -16,6 +16,7 @@ export default class TimeSlotsRoutes {
 
         this.router.post('/', clubAuthMiddleware, this.controller.createTimeSlots);
         this.router.delete('/:slotId', clubAuthMiddleware, this.controller.deleteTimeSlot);
+        this.router.patch('/:slotId/status', clubAuthMiddleware, this.controller.updateSlotStatus);
 
         this.router.get('/', this.controller.getFieldTimeSlots);
         this.router.get('/available', this.controller.getAvailableTimeSlots);

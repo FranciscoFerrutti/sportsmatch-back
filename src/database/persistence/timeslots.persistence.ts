@@ -136,4 +136,19 @@ export default class TimeSlotPersistence {
             }
         });
     }
+
+    async findSlotById(fieldId: number, slotId: number) {
+        return await TimeSlot.findOne({
+            where: {
+                id: slotId,
+                field_id: fieldId
+            }
+        });
+    }
+
+    async updateSlotStatus(slot: TimeSlot, slotStatus: SlotStatus) {
+        slot.slotStatus = slotStatus;
+        await slot.save();
+        return slot;
+    }
 } 
