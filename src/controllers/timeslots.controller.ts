@@ -6,6 +6,8 @@ import { HttpRequestInfo, validateBody, validateParams, validateQuery } from "..
 import { HTTP_METHODS, HTTP_STATUS } from "../constants/http.constants";
 import Joi from "joi";
 import { autobind } from "core-decorators";
+import { SlotStatus } from '../constants/slots.constants';
+import { TIME_REGEX } from '../constants/regex.constants';
 
 @autobind
 class TimeSlotsController {
@@ -37,30 +39,32 @@ class TimeSlotsController {
             }
         })
         .build())
-    @validateBody(Joi.object({
-        availabilityDate: Joi.string().isoDate().required(),
-        startTime: Joi.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
-        endTime: Joi.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required()
-    }))
-    @HttpRequestInfo("/fields/:fieldId/availability", HTTP_METHODS.POST)
-    public async createTimeSlots(req: Request, res: Response, next: NextFunction) {
-        try {
-            const fieldId = parseInt(req.params.fieldId);
-            const clubId = req.user.id;
-            const { availabilityDate, startTime, endTime } = req.body;
+        @validateBody(Joi.object({
+            availabilityDate: Joi.string().isoDate().required(),
+            startTime: Joi.string().regex(TIME_REGEX).required(),
+            endTime: Joi.string().regex(TIME_REGEX).required(),
+            slotStatus: Joi.string().valid(...Object.values(SlotStatus)).optional()
+        }))
+        @HttpRequestInfo("/fields/:fieldId/availability", HTTP_METHODS.POST)
+        public async createTimeSlots(req: Request, res: Response, next: NextFunction) {
+            try {
+                const fieldId = parseInt(req.params.fieldId);
+                const clubId = req.user.id;
+                const { availabilityDate, startTime, endTime, slotStatus } = req.body;
 
-            const slots = await this.service.createTimeSlotsForField({
-                fieldId,
-                availabilityDate,
-                startTime,
-                endTime
-            }, clubId);
+                const slots = await this.service.createTimeSlotsForField({
+                    fieldId,
+                    availabilityDate,
+                    startTime,
+                    endTime,
+                    slotStatus
+                }, clubId);
 
-            res.status(HTTP_STATUS.CREATED).json(slots);
-        } catch (error) {
-            next(error);
+                res.status(HTTP_STATUS.CREATED).json(slots);
+            } catch (error) {
+                next(error);
+            }
         }
-    }
 
     @document(SwaggerEndpointBuilder.create()
         .responses({
@@ -87,15 +91,24 @@ class TimeSlotsController {
         fieldId: Joi.number().min(1).required()
     }))
     @validateQuery(Joi.object({
-        availabilityDate: Joi.string().isoDate().optional()
+        availabilityDate: Joi.string().isoDate().optional(),
+        slotStatus: Joi.string().valid('available', 'booked', 'maintenance').optional(),
+        startTime: Joi.string().regex(TIME_REGEX).optional(),
+        endTime: Joi.string().regex(TIME_REGEX).optional()
     }))
     @HttpRequestInfo("/fields/:fieldId/availability", HTTP_METHODS.GET)
     public async getFieldTimeSlots(req: Request, res: Response, next: NextFunction) {
         try {
             const fieldId = parseInt(req.params.fieldId);
-            const { availabilityDate } = req.query;
+            const { availabilityDate, slotStatus, startTime, endTime } = req.query;
 
-            const slots = await this.service.getFieldTimeSlots(fieldId, availabilityDate as string);
+            const slots = await this.service.getFieldTimeSlots(
+                fieldId, 
+                availabilityDate as string,
+                slotStatus as SlotStatus,
+                startTime as string,
+                endTime as string
+            );
             res.status(HTTP_STATUS.OK).json(slots);
         } catch (error) {
             next(error);

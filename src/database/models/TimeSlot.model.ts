@@ -11,12 +11,7 @@ import {
     UpdatedAt
 } from "sequelize-typescript";
 import Field from "./Field.model";
-
-export enum SlotStatus {
-    AVAILABLE = 'available',
-    BOOKED = 'booked',
-    MAINTENANCE = 'maintenance'
-}
+import { SlotStatus } from "../../constants/slots.constants";
 
 @Table({
     timestamps: true,

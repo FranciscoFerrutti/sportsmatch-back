@@ -4,6 +4,7 @@ import TimeSlotPersistence from "../database/persistence/timeslots.persistence";
 import NotFoundException from "../exceptions/notFound.exception";
 import GenericException from "../exceptions/generic.exception";
 import { HTTP_STATUS } from "../constants/http.constants";
+import { SlotStatus } from '../constants/slots.constants';
 
 export default class TimeSlotsService {
     private static instance: TimeSlotsService;
@@ -70,8 +71,20 @@ export default class TimeSlotsService {
         });
     }
 
-    async getFieldTimeSlots(fieldId: number, date?: string) {
-        return await this.persistence.getFieldTimeSlots(fieldId, date);
+    async getFieldTimeSlots(
+        fieldId: number, 
+        date?: string, 
+        slotStatus?: SlotStatus,
+        startTime?: string,
+        endTime?: string
+    ) {
+        return await this.persistence.getFieldTimeSlots(
+            fieldId, 
+            date, 
+            slotStatus,
+            startTime,
+            endTime
+        );
     }
 
     async getAvailableTimeSlots(fieldId: number, startDate: string, endDate: string) {

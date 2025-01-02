@@ -1,7 +1,7 @@
 import { Transaction } from 'sequelize';
 import TimeSlot from '../models/TimeSlot.model';
 import { Op } from 'sequelize';
-import { SlotStatus } from '../models/TimeSlot.model';
+import { SlotStatus } from '../../constants/slots.constants';
 import {CreateTimeSlotsDTO} from "../../dto/timeslots.dto";
 
 interface CreateTimeSlotsWithDurationDTO extends CreateTimeSlotsDTO {
@@ -41,7 +41,7 @@ export default class TimeSlotPersistence {
                 availability_date: data.availabilityDate,
                 start_time: this.formatTime(currentTime),
                 end_time: this.formatTime(slotEndTime),
-                slotStatus: SlotStatus.AVAILABLE
+                slotStatus: data.slotStatus || SlotStatus.AVAILABLE
             });
 
             currentTime = slotEndTime;
@@ -76,10 +76,31 @@ export default class TimeSlotPersistence {
         });
     }
 
-    async getFieldTimeSlots(fieldId: number, date?: string) {
+    async getFieldTimeSlots(
+        fieldId: number, 
+        date?: string, 
+        slotStatus?: SlotStatus,
+        startTime?: string,
+        endTime?: string
+    ) {
         const where: any = { field_id: fieldId };
+        
         if (date) {
             where.availability_date = date;
+        }
+        
+        if (slotStatus) {
+            where.slotStatus = slotStatus;
+        }
+        
+        if (startTime) {
+            where.start_time = where.start_time || {};
+            where.start_time[Op.gte] = startTime;
+        }
+        
+        if (endTime) {
+            where.end_time = where.end_time || {};
+            where.end_time[Op.lte] = endTime;
         }
 
         return await TimeSlot.findAll({
