@@ -40,4 +40,14 @@ export default class Field extends Model {
 
     @UpdatedAt
     updated_at!: Date;
+
+    @Column({
+        allowNull: false,
+        type: DataType.INTEGER,
+        defaultValue: 60,
+        validate: {
+            isIn: [[15, 30, 60, 90, 120]] // Common slot durations
+        },
+    })
+    slot_duration!: number;
 }

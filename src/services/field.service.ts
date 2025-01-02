@@ -16,11 +16,23 @@ class FieldService{
     private constructor() {
     }
 
+    private validateSlotDuration(duration: number) {
+        const validDurations = [15, 30, 60, 90, 120];
+        if (!validDurations.includes(duration)) {
+            throw new GenericException({
+                message: "Invalid slot duration. Must be one of: 15, 30, 60, 90, 120 minutes",
+                status: HTTP_STATUS.BAD_REQUEST,
+                internalStatus: "INVALID_SLOT_DURATION"
+            });
+        }
+    }
+
     public async getFields(clubId: string): Promise<any> {
         return await FieldPersistence.getClubFields(clubId);
     }
 
     public async createField(field: IField): Promise<void> {
+        this.validateSlotDuration(field.slot_duration);
         await FieldPersistence.createField(field);
     }
 
@@ -38,6 +50,9 @@ class FieldService{
     }
 
     public async updateField(fieldId: string, clubId: string, fieldData: IFieldUpdate): Promise<void> {
+        if (fieldData.slot_duration) {
+            this.validateSlotDuration(fieldData.slot_duration);
+        }
         const field = await FieldService.checkOwnership(fieldId, clubId);
         await FieldPersistence.updateField(field, fieldData);
     }

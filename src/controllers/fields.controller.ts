@@ -54,15 +54,16 @@ class FieldsController{
         cost: Joi.number().required().min(0),
         description: Joi.string().min(5).max(250).required(),
         capacity: Joi.number().required(),
+        slot_duration: Joi.number().required()
     }))
     @HttpRequestInfo("/fields", HTTP_METHODS.POST)
     public async postField(req: Request, res: Response, next: NextFunction) {
-        const { name, cost, description, capacity } = req.body;
+        const { name, cost, description, capacity, slot_duration } = req.body;
         const ownerId = req.user.id;
 
         try {
             await this.fieldService.createField({
-                ownerId, name, cost, description, capacity
+                ownerId, name, cost, description, capacity, slot_duration
             });
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {
@@ -86,15 +87,16 @@ class FieldsController{
         cost: Joi.number().optional(),
         description: Joi.string().min(5).max(250).optional(),
         capacity: Joi.number().optional(),
+        slot_duration: Joi.number().optional()
     }))
     @HttpRequestInfo("/fields/:fieldId", HTTP_METHODS.PUT)
     public async updateField(req: Request, res: Response, next: NextFunction) {
-        const { name, cost, description, capacity } = req.body;
+        const { name, cost, description, capacity, slot_duration } = req.body;
         const ownerId = req.user.id;
         const fieldId = req.params.fieldId;
 
         try {
-            await this.fieldService.updateField(fieldId, ownerId,{ name, cost, description, capacity });
+            await this.fieldService.updateField(fieldId, ownerId,{ name, cost, description, capacity, slot_duration });
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);

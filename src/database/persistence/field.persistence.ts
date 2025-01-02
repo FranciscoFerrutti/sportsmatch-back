@@ -12,7 +12,8 @@ class FieldPersistence{
             cost_per_minute: field.cost,
             description: field.description,
             capacity: field.capacity,
-            club_id: field.ownerId
+            club_id: field.ownerId,
+            slot_duration: field.slot_duration
         });
     }
 
@@ -25,7 +26,8 @@ class FieldPersistence{
             name: fieldData.name,
             cost_per_minute: fieldData.cost,
             description: fieldData.description,
-            capacity: fieldData.capacity
+            capacity: fieldData.capacity,
+            slot_duration: fieldData.slot_duration
         });
     }
 
