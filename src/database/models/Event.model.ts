@@ -2,19 +2,27 @@ import { Column, Model, Table, DataType, BelongsTo, CreatedAt, UpdatedAt, HasMan
 import Sport from "./Sport.model";
 import Participant from "./Participant.model";
 import { OrganizerType } from "../../constants/event.constants";
+import User from "./User.model";
+import Club from "./Club.model";
+
 export interface IEventDetail {
-    event_id: number,
-    description: string,
-    schedule: string,
-    location: string,
-    expertise: number,
-    sportId: number,
-    remaining: string,
-    owner: {
-        firstname: string,
-        id: number
-    }
-    status: number
+    event_id: number;
+    description: string;
+    schedule: string;
+    location: string;
+    expertise: number;
+    sportId: number;
+    remaining: string;
+    organizerType: OrganizerType;
+    status: number;
+    userOwner?: {
+        firstname: string;
+        id: number;
+    };
+    clubOwner?: {
+        name: string;
+        id: number;
+    };
 }
 
 @Table({
@@ -92,6 +100,20 @@ class Event extends Model {
 
     @CreatedAt
     declare created_at: Date;
+
+    @BelongsTo(() => User, { 
+        foreignKey: 'ownerId',
+        as: 'userOwner',
+        constraints: false
+    })
+    declare userOwner: User;
+
+    @BelongsTo(() => Club, { 
+        foreignKey: 'ownerId',
+        as: 'clubOwner',
+        constraints: false
+    })
+    declare clubOwner: Club;
 }
 
 export default Event;

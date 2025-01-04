@@ -142,7 +142,7 @@ class EventPersistence {
         `;
     }
 
-    static async getEventDetailById(eventId: string): Promise<IEventDetail | null > {
+    static async getEventDetailById(eventId: string): Promise<IEventDetail | null> {
         const eventDetails = await Event.findOne({
             where: { id: eventId },
             attributes: [
@@ -152,12 +152,8 @@ class EventPersistence {
                 'location',
                 'expertise',
                 'sportId',
-                [sequelize.literal('remaining - COUNT(participants.id)'), 'remaining'],
                 'organizerType',
-                [
-                    sequelize.literal('remaining - COUNT(participants.id)'),
-                    'remaining'
-                ],
+                [sequelize.literal('remaining - COUNT(participants.id)'), 'remaining'],
                 [
                     sequelize.literal(`
                         CASE
@@ -189,10 +185,13 @@ class EventPersistence {
                     attributes: [],
                 },
             ],
-            group: ['Event.id', 'userOwner.id', 'userOwner.firstname', 'clubOwner.id', 'clubOwner.name'],
+            group: ['Event.id', 'userOwner.id', 'clubOwner.id'],
         });
 
-        return eventDetails?.toJSON() as IEventDetail;
+        if (!eventDetails) return null;
+
+        const result = eventDetails.toJSON() as IEventDetail;
+        return result;
     }
 
     static async getEventById(id: string): Promise<Event | null > {
