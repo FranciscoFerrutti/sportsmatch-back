@@ -6,6 +6,9 @@ import IEventDetailDto from "../dto/eventDetail.dto";
 import IEventQueryDto from "../dto/eventQuery.dto";
 import EventDetailDtoMapper from "../mapper/eventDetailDto.mapper";
 import EventSearchDtoMapper from "../mapper/eventSearchDto.mapper";
+import {OrganizerType} from "../constants/event.constants";
+import UserPersistence from "../database/persistence/user.persistence";
+import ClubPersistence from "../database/persistence/club.persistence";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -40,6 +43,19 @@ class EventsService {
     }
 
     public async createEvent(event: IEvent): Promise<void> {
+        if (event.organizerType === OrganizerType.USER) {
+            const user = await UserPersistence.getUserById(event.ownerId.toString());
+            if (!user) {
+                throw new NotFoundException('User owner not found');
+            }
+        } else if (event.organizerType === OrganizerType.CLUB) {
+            const club = await ClubPersistence.getClubById(event.ownerId.toString());
+            if (!club) {
+                throw new NotFoundException('Club owner not found');
+            }
+        } else {
+            throw new Error('Invalid organizer type');
+        }
         await EventPersistence.createEvent(event);
     }
 }

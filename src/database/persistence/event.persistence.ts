@@ -1,4 +1,3 @@
-import QueryTypes from "sequelize/types/query-types";
 import { EventQuery, IEvent } from "../../interfaces/event.interface";
 import sequelize from "../connection";
 import Event, { IEventDetail } from "../models/Event.model"
@@ -6,27 +5,9 @@ import Participant from "../models/Participant.model";
 import User from "../models/User.model";
 import { QueryBuilder } from "../utils/postgres.database";
 import Club from "../models/Club.model";
-import {OrganizerType} from "../../constants/event.constants";
-import UserPersistence from "./user.persistence";
-import ClubPersistence from "./club.persistence";
-import NotFoundException from "../../exceptions/notFound.exception";
 
 class EventPersistence {
     static async createEvent(event: IEvent): Promise<Event> {
-        if (event.organizerType === OrganizerType.USER) {
-            const user = await UserPersistence.getUserById(event.ownerId.toString());
-            if (!user) {
-                throw new NotFoundException('User owner not found');
-            }
-        } else if (event.organizerType === OrganizerType.CLUB) {
-            const club = await ClubPersistence.getClubById(event.ownerId.toString());
-            if (!club) {
-                throw new NotFoundException('Club owner not found');
-            }
-        } else {
-            throw new Error('Invalid organizer type');
-        }
-
         const newEvent = await Event.create({
             ownerId: event.ownerId,
             organizerType: event.organizerType,
