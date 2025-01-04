@@ -23,7 +23,7 @@ class ClubService {
     }
 
     public async getClubs(): Promise<any> {
-        return await ClubPersistence.getAllUsers();
+        return await ClubPersistence.getAllClubs();
     }
 
 
@@ -33,7 +33,7 @@ class ClubService {
         phone_number: string,
         transaction: Transaction
     ): Promise<void> {
-        await ClubPersistence.createUser({ email, name, phone_number}, transaction);
+        await ClubPersistence.createClub({ email, name, phone_number}, transaction);
     }
 
 

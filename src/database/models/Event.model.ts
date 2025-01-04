@@ -1,8 +1,7 @@
-import { Column, Model, Table, DataType, ForeignKey, BelongsTo, CreatedAt, UpdatedAt, HasMany } from "sequelize-typescript";
-import User from "./User.model";
+import { Column, Model, Table, DataType, BelongsTo, CreatedAt, UpdatedAt, HasMany, ForeignKey } from "sequelize-typescript";
 import Sport from "./Sport.model";
 import Participant from "./Participant.model";
-
+import { OrganizerType } from "../../constants/event.constants";
 export interface IEventDetail {
     event_id: number,
     description: string,
@@ -11,9 +10,9 @@ export interface IEventDetail {
     expertise: number,
     sportId: number,
     remaining: string,
-    owner: { 
+    owner: {
         firstname: string,
-        id: number 
+        id: number
     }
     status: number
 }
@@ -31,8 +30,6 @@ class Event extends Model {
     })
     declare id: number;
 
-    @ForeignKey(() => User)
-    @BelongsTo(() => User, { as: 'owner' })
     @Column({
         allowNull: false,
         type: DataType.INTEGER,
@@ -81,6 +78,14 @@ class Event extends Model {
 
     @HasMany(() => Participant)
     declare participants: Participant[];
+
+    @Column({
+        type: DataType.ENUM(...Object.values(OrganizerType)),
+        allowNull: false,
+        defaultValue: OrganizerType.USER,
+        field: 'organizer_type'
+    })
+    declare organizerType: OrganizerType;
 
     @UpdatedAt
     declare updated_at: Date;

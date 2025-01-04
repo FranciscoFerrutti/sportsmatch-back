@@ -28,6 +28,11 @@ class UserPersistence {
         return user;
     }
 
+    static async getUserById(id: string): Promise<User | null> {
+        const user = await User.findByPk(id);
+        return user;
+    }
+
     static async getUserDetailById(id: string): Promise<IUserDetail | null> {
         const userDetail = await sequelize.query(`SELECT
                 u.id AS user_id,

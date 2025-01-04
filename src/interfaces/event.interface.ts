@@ -1,6 +1,8 @@
+import { OrganizerType } from "../constants/event.constants";
 
 export interface IEvent {
     ownerId: string,
+    organizerType: OrganizerType,
     sportId: number,
     expertise: number,
     location: string,

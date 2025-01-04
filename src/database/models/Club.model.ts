@@ -5,6 +5,8 @@ import {
 } from "sequelize-typescript";
 import ClubLocation from "./ClubLocation.model";
 import Field from "./Field.model"; // Import the Field model
+import Event from "./Event.model";
+import { OrganizerType } from "../../constants/event.constants";
 
 
 export interface IClubDetail {
@@ -57,6 +59,15 @@ export default class Club extends Model<IClubAttributes> {
 
     @HasMany(() => Field)
     fields!: Field[];
+
+    @HasMany(() => Event, {
+        foreignKey: 'owner_id',
+        constraints: false,
+        scope: {
+            organizerType: OrganizerType.CLUB
+        }
+    })
+    declare events: Event[];
 
     @CreatedAt
     created_at!: Date;

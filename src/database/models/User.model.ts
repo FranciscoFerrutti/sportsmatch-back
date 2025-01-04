@@ -3,6 +3,7 @@ import UserSport from "./UserSport.model";
 import Event from './Event.model';
 import UserLocation from "./UserLocation.model";
 import Rating from "./Rating.model";
+import { OrganizerType } from "../../constants/event.constants";
 
 export interface IUserDetail {
     user_id: number;
@@ -95,7 +96,13 @@ class User extends Model<IUserAttributes> {
     @HasMany(() => UserSport)
     declare sports: UserSport[];
 
-    @HasMany(() => Event)
+    @HasMany(() => Event, {
+        foreignKey: 'owner_id',
+        constraints: false,
+        scope: {
+            organizerType: OrganizerType.USER
+        }
+    })
     declare events: Event[];
 
     @HasMany(() => UserLocation)

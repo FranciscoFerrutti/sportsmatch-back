@@ -4,6 +4,7 @@ import cors from 'cors';
 import EventsController from '../controllers/events.controller';
 import userAuthMiddleware from '../middlewares/jwt.middleware';
 import ParticipantsRoutes from './participants.routes';
+import clubAuthMiddleware from '../middlewares/clubauth.middleware';
 
 export default class EventsRoutes {
     public router: Router = Router({ mergeParams: true });
@@ -19,7 +20,16 @@ export default class EventsRoutes {
 
         this.router.get('/', this.controller.getEvents);
 
-        this.router.post('/', userAuthMiddleware, this.controller.createEvent);
+        this.router.post('/', 
+            (req, res, next) => {
+                const authType = req.header('x-auth-type');
+                if (authType === 'club') {
+                    return clubAuthMiddleware(req, res, next);
+                }
+                return userAuthMiddleware(req, res, next);
+            }, 
+            this.controller.createEvent
+        );
 
         this.router.use('/:eventId/participants', new ParticipantsRoutes().router);
         this.router.get('/:eventId', this.controller.getEventById);

@@ -7,6 +7,7 @@ import Joi from "joi";
 import { document } from "../utils/swaggerDocumentation/annotations";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 import { ParticipantStatus } from "../database/models/Participant.model";
+import { OrganizerType } from "../constants/event.constants";
 
 @autobind
 class EventsController {
@@ -106,17 +107,25 @@ class EventsController {
         schedule: Joi.date().required(),
         location: Joi.string().required(),
         remaining: Joi.number().required(),
-        duration: Joi.number().required(), // minutes
+        duration: Joi.number().required(),
         description: Joi.string().max(100).required()
     }))
     @HttpRequestInfo("/events", HTTP_METHODS.POST)
     public async createEvent(req: Request, res: Response, next: NextFunction) {
         const { sportId, expertise, description, schedule, duration, location, remaining } = req.body;
         const ownerId = req.user.id;
-
+        const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
         try {
             await this.eventsService.createEvent({
-                ownerId, sportId, expertise, location, schedule, description, duration, remaining
+                ownerId, 
+                organizerType,
+                sportId, 
+                expertise, 
+                location, 
+                schedule, 
+                description, 
+                duration, 
+                remaining
             });
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {

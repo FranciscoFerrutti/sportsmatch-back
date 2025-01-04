@@ -5,11 +5,31 @@ import Event, { IEventDetail } from "../models/Event.model"
 import Participant from "../models/Participant.model";
 import User from "../models/User.model";
 import { QueryBuilder } from "../utils/postgres.database";
+import Club from "../models/Club.model";
+import {OrganizerType} from "../../constants/event.constants";
+import UserPersistence from "./user.persistence";
+import ClubPersistence from "./club.persistence";
+import NotFoundException from "../../exceptions/notFound.exception";
 
 class EventPersistence {
     static async createEvent(event: IEvent): Promise<Event> {
+        if (event.organizerType === OrganizerType.USER) {
+            const user = await UserPersistence.getUserById(event.ownerId.toString());
+            if (!user) {
+                throw new NotFoundException('User owner not found');
+            }
+        } else if (event.organizerType === OrganizerType.CLUB) {
+            const club = await ClubPersistence.getClubById(event.ownerId.toString());
+            if (!club) {
+                throw new NotFoundException('Club owner not found');
+            }
+        } else {
+            throw new Error('Invalid organizer type');
+        }
+
         const newEvent = await Event.create({
             ownerId: event.ownerId,
+            organizerType: event.organizerType,
             sportId: event.sportId,
             expertise: event.expertise,
             location: event.location,
@@ -145,41 +165,50 @@ class EventPersistence {
         const eventDetails = await Event.findOne({
             where: { id: eventId },
             attributes: [
-              ['id', 'event_id'],
-              'description',
-              [sequelize.literal('schedule::text'), 'schedule'],
-              'location',
-              'expertise',
-              'sportId',
-              [
-                sequelize.literal('remaining - COUNT(participants.id)'),
-                'remaining'
-              ],
-              [
-                sequelize.literal(`
-                  CASE
-                    WHEN schedule > CURRENT_TIMESTAMP THEN 0
-                    WHEN schedule <= CURRENT_TIMESTAMP AND schedule + (duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
-                    ELSE 2
-                  END
-                `),
-                'status'
-              ]
+                ['id', 'event_id'],
+                'description',
+                [sequelize.literal('schedule::text'), 'schedule'],
+                'location',
+                'expertise',
+                'sportId',
+                [sequelize.literal('remaining - COUNT(participants.id)'), 'remaining'],
+                'organizerType',
+                [
+                    sequelize.literal('remaining - COUNT(participants.id)'),
+                    'remaining'
+                ],
+                [
+                    sequelize.literal(`
+                        CASE
+                            WHEN schedule > CURRENT_TIMESTAMP THEN 0
+                            WHEN schedule <= CURRENT_TIMESTAMP AND schedule + (duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
+                            ELSE 2
+                        END
+                    `),
+                    'status'
+                ]
             ],
             include: [
-              {
-                model: User,
-                as: 'owner',
-                attributes: ['firstname', 'id'],
-              },
-              {
-                model: Participant,
-                where: { status: true },
-                required: false,
-                attributes: [],
-              },
+                {
+                    model: User,
+                    as: 'userOwner',
+                    attributes: ['firstname', 'id'],
+                    required: false,
+                },
+                {
+                    model: Club,
+                    as: 'clubOwner',
+                    attributes: ['name', 'id'],
+                    required: false,
+                },
+                {
+                    model: Participant,
+                    where: { status: true },
+                    required: false,
+                    attributes: [],
+                },
             ],
-            group: ['Event.id', 'owner.id', 'owner.firstname'],
+            group: ['Event.id', 'userOwner.id', 'userOwner.firstname', 'clubOwner.id', 'clubOwner.name'],
         });
 
         return eventDetails?.toJSON() as IEventDetail;

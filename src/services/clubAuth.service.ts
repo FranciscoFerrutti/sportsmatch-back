@@ -59,7 +59,7 @@ class ClubAuthService {
 
         if (!await validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
 
-        const user = await ClubPersistence.getUserByEmail(email);
+        const user = await ClubPersistence.getClubByEmail(email);
         if (!user) throw new NotFoundException('User');
         // const userDetail = await UserPersistence.getUserDetailById(user.id.toString());
         // if (!userDetail) throw new NotFoundException('User');
