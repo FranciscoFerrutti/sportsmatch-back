@@ -20,11 +20,13 @@ export interface EventQuery {
     expertise: string;
     sport_id: number;
     remaining: number;
-    owner_firstname: string;
+    organizer_type: OrganizerType;
+    owner_firstname?: string;
+    owner_name?: string;
     owner_id: number;
-    participant_status?: boolean; // these two are for participants id filter
+    participant_status?: boolean;
     is_rated?: boolean;
-    rating: number; // From here to the end are for getEvents
+    rating: number;
     rate_count: number;
     event_status?: number;
 }

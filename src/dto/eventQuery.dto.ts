@@ -8,6 +8,7 @@ export default interface IEventQueryDto {
     expertise: number;
     sportId: number;
     remaining: string;
+    organizerType: string;
     owner: { 
         firstName: string,
         id: number 

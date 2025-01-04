@@ -5,6 +5,7 @@ import Participant from "../models/Participant.model";
 import User from "../models/User.model";
 import { QueryBuilder } from "../utils/postgres.database";
 import Club from "../models/Club.model";
+import {OrganizerType} from "../../constants/event.constants";
 
 class EventPersistence {
     static async createEvent(event: IEvent): Promise<Event> {
@@ -37,9 +38,17 @@ class EventPersistence {
         events.location,
         events.expertise,
         events.sport_id,
+        events.organizer_type,
         (events.remaining - COUNT(participants.id))::integer AS remaining,
-        users.firstname AS owner_firstname,
-        users.id AS owner_id,
+        CASE 
+            WHEN events.organizer_type = '${OrganizerType.USER}' THEN users.firstname
+            ELSE NULL
+        END as owner_firstname,
+        CASE 
+            WHEN events.organizer_type = '${OrganizerType.CLUB}' THEN clubs.name
+            ELSE NULL
+        END as owner_name,
+        events.owner_id,
         ${participantIdFilter ? "participants.status as participant_status," : ""}
         ${participantIdFilter ? "COALESCE(rated_aux.isRated, FALSE) as is_rated," : ""}
         COALESCE(rate.rating::float, 0) as rating,
@@ -49,12 +58,10 @@ class EventPersistence {
             WHEN events.schedule <= CURRENT_TIMESTAMP AND events.schedule + (events.duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
             ELSE 2
         END AS event_status
-        FROM
-            events
-        JOIN
-            users ON events.owner_id = users.id
-        LEFT JOIN
-            participants ON events.id = participants.event_id
+        FROM events
+        LEFT JOIN users ON events.owner_id = users.id AND events.organizer_type = '${OrganizerType.USER}'
+        LEFT JOIN clubs ON events.owner_id = clubs.id AND events.organizer_type = '${OrganizerType.CLUB}'
+        LEFT JOIN participants ON events.id = participants.event_id
         LEFT JOIN (
             SELECT rated, avg(rating) as rating, count(rating) as count FROM ratings GROUP BY rated
         ) as rate ON events.owner_id = rate.rated
@@ -101,7 +108,7 @@ class EventPersistence {
             queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
     }
 
-    queryBuilder.addGroupBy(`events.id, users.firstname, users.id`);
+    queryBuilder.addGroupBy(`events.id, users.firstname, users.id, clubs.name, clubs.id`);
     if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
     queryBuilder.addGroupBy(`rate.rating, rate.count`);
     if (participantIdFilter)
@@ -116,11 +123,13 @@ class EventPersistence {
                 event_id: event.event_id,
                 description: event.description,
                 schedule: event.schedule,
+                organizer_type: event.organizer_type,
                 location: event.location,
                 expertise: event.expertise,
                 sport_id: event.sport_id,
                 remaining: event.remaining,
                 owner_firstname: event.owner_firstname,
+                owner_name: event.owner_name,
                 owner_id: event.owner_id,
                 participant_status: event.participant_status,
                 is_rated: event.is_rated,
