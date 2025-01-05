@@ -69,15 +69,27 @@ class AuthService {
         return {userDetail: UserDetailDtoMapper.toUserDetailDto(userDetail), accessToken};
     }
 
-    verifyToken = (token: string) : string | jwt.JwtPayload=> {
-
-        try{
+    verifyToken = async (token: string): Promise<{email: string, id: string, type: string}> => {
+        try {
             const pubKey = this.jwtKey;
-            return jwt.verify(token, pubKey);
-        } catch(err){
+            const decoded = jwt.verify(token, pubKey) as {email: string, id: string, type: string};
+            
+            if (decoded.type !== 'user') {
+                throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: Not a valid user token"};
+            }
+            
+            const user = await UserPersistence.getUserById(decoded.id);
+            if (!user) {
+                throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: User not found"};
+            }
+            
+            return decoded;
+        } catch(err) {
             const error = err as any;
             if(error.name == 'TokenExpiredError') {
                 throw {status: HTTP_STATUS.UNAUTHORIZED, message: "Expired token."};
+            } else if (error.status) {
+                throw error;
             } else {
                 throw {status: HTTP_STATUS.BAD_REQUEST, message: "Invalid token."};
             }
@@ -89,7 +101,7 @@ class AuthService {
     }
 
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
-        const payload = {id: userId, email: email};
+        const payload = {id: userId, email: email, type: 'user'};
         const key = this.jwtKey;
         return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
     }

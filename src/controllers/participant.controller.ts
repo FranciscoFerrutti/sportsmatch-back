@@ -68,12 +68,19 @@ export default class ParticipantController {
         const participantId = req.params.participantId;
         const eventId = req.params.eventId;
         const userId = req.user.id;
+        const authType = req.header('x-auth-type');
 
         try {
-            if (participantId !== userId) { // deny by owner
-                await this.participantService.removeParticipant(eventId, participantId, userId);
-            } else { // cancel by participant
+            if (participantId !== userId) { // remove by owner of event
+                await this.participantService.removeParticipant(eventId, participantId, userId, authType);
+            } else if (authType === 'user') {
                 await this.participantService.removeParticipant(eventId, participantId);
+            } else {
+                throw new GenericException({ 
+                    message: "Only users can be participants", 
+                    status: HTTP_STATUS.BAD_REQUEST, 
+                    internalStatus: "INVALID_PARTICIPANT_TYPE" 
+                });
             }
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
@@ -104,10 +111,21 @@ export default class ParticipantController {
         const ownerId = req.user.id;
         const eventId = parseInt(req.params.eventId);
         const status = req.body.status;
+        const authType = req.header('x-auth-type');
 
         try {
-            if (!status) throw new GenericException({ message: "Status is invalid for this event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "INVALID_STATUS" })
-            await this.participantService.acceptParticipant(eventId, participantId, ownerId);
+            if (!status) throw new GenericException({ 
+                message: "Status is invalid for this event", 
+                status: HTTP_STATUS.BAD_REQUEST, 
+                internalStatus: "INVALID_STATUS" 
+            });
+            if(!authType) throw new GenericException({ 
+                message: "User is not authorized to update this participant", 
+                status: HTTP_STATUS.BAD_REQUEST, 
+                internalStatus: "UNAUTHORIZED" 
+            });
+            
+            await this.participantService.acceptParticipant(eventId, participantId, ownerId, authType);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);

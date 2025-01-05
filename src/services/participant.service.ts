@@ -7,6 +7,7 @@ import GenericException from "../exceptions/generic.exception";
 import NotFoundException from "../exceptions/notFound.exception";
 import ParticipantDetailDtoMapper from "../mapper/participantDetailDto.mapper";
 import { round } from "../utils/math/math.utils";
+import {OrganizerType} from "../constants/event.constants";
 
 class ParticipantService {
     private static instance: ParticipantService;
@@ -25,20 +26,37 @@ class ParticipantService {
         await ParticipantPersistence.createParticipant(eventId.toString(), participantId);
     }
 
-    public async removeParticipant(eventId: string, participantId: string, ownerId?: string): Promise<void> {
+    public async removeParticipant(eventId: string, participantId: string, ownerId?: string, ownerType?: string): Promise<void> {
         if (ownerId) {
             const event = await EventPersistence.getEventById(eventId);
             if (!event) throw new NotFoundException("Event");
-            if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "NOT_OWNER" });
+            
+            if (event.ownerId.toString() !== ownerId || 
+                event.organizerType !== (ownerType === 'club' ? OrganizerType.CLUB : OrganizerType.USER)) {
+                throw new GenericException({ 
+                    message: "User is not the owner of the event", 
+                    status: HTTP_STATUS.BAD_REQUEST, 
+                    internalStatus: "NOT_OWNER" 
+                });
+            }
         }
         const removed = await ParticipantPersistence.removeParticipant(eventId.toString(), participantId);
         if (!removed) throw new NotFoundException("Participant");
     }
 
-    public async acceptParticipant(eventId: number, participantId: string, ownerId: string): Promise<void> {
+    public async acceptParticipant(eventId: number, participantId: string, ownerId: string, ownerType: string): Promise<void> {
         const event = await EventPersistence.getEventById(eventId.toString());
         if (!event) throw new NotFoundException("Event");
-        if (event.ownerId.toString() !== ownerId) throw new GenericException({ message: "User is not the owner of the event", status: HTTP_STATUS.BAD_REQUEST, internalStatus: "NOT_OWNER" });
+        
+        if (event.ownerId.toString() !== ownerId || 
+            event.organizerType !== (ownerType === 'club' ? OrganizerType.CLUB : OrganizerType.USER)) {
+            throw new GenericException({ 
+                message: "User is not the owner of the event", 
+                status: HTTP_STATUS.BAD_REQUEST, 
+                internalStatus: "NOT_OWNER" 
+            });
+        }
+
         await ParticipantPersistence.updateStatus(eventId.toString(), participantId, true);
     }
 

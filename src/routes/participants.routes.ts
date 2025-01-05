@@ -3,6 +3,7 @@ import { urlencoded } from 'body-parser';
 import cors from 'cors';
 import userAuthMiddleware from '../middlewares/jwt.middleware';
 import ParticipantController from '../controllers/participant.controller';
+import authMiddleware from '../middlewares/auth.middleware';
 
 export default class ParticipantsRoutes {
     public router: Router = Router({ mergeParams: true });
@@ -18,8 +19,7 @@ export default class ParticipantsRoutes {
 
         this.router.post('/', userAuthMiddleware, this.controller.addParticipant);
         this.router.get('/', this.controller.getParticipants);
-
-        this.router.delete('/:participantId', userAuthMiddleware, this.controller.removeParticipant);
-        this.router.put('/:participantId', userAuthMiddleware, this.controller.updateParticipant);
+        this.router.delete('/:participantId', authMiddleware, this.controller.removeParticipant);
+        this.router.put('/:participantId', authMiddleware, this.controller.updateParticipant);
     }
 }

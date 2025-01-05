@@ -5,7 +5,6 @@ import GenericException from "../exceptions/generic.exception";
 import {HTTP_STATUS} from "../constants/http.constants";
 import NotFoundException from "../exceptions/notFound.exception";
 import ClubPersistence from "../database/persistence/club.persistence";
-import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
 import * as jwt from "jsonwebtoken";
 import Bluebird from "bluebird";
 import Crypto from "crypto";
@@ -69,15 +68,27 @@ class ClubAuthService {
         return accessToken;
     }
 
-    verifyToken = (token: string) : string | jwt.JwtPayload=> {
-
-        try{
+    verifyToken = async (token: string): Promise<{email: string, id: string, type: string}> => {
+        try {
             const pubKey = this.jwtKey;
-            return jwt.verify(token, pubKey);
-        } catch(err){
+            const decoded = jwt.verify(token, pubKey) as {email: string, id: string, type: string};
+            
+            if (decoded.type !== 'club') {
+                throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: Not a valid club token"};
+            }
+            
+            const club = await ClubPersistence.getClubById(decoded.id);
+            if (!club) {
+                throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: Club not found"};
+            }
+            
+            return decoded;
+        } catch(err) {
             const error = err as any;
             if(error.name == 'TokenExpiredError') {
                 throw {status: HTTP_STATUS.UNAUTHORIZED, message: "Expired token."};
+            } else if (error.status) {
+                throw error;
             } else {
                 throw {status: HTTP_STATUS.BAD_REQUEST, message: "Invalid token."};
             }
@@ -89,7 +100,7 @@ class ClubAuthService {
     }
 
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
-        const payload = {id: userId, email: email};
+        const payload = {id: userId, email: email, type: 'club'};
         const key = this.jwtKey;
         return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
     }
