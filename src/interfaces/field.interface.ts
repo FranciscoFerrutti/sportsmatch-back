@@ -5,6 +5,7 @@ export interface IField {
     capacity: number;
     ownerId: string;
     slot_duration: number;
+    sportIds: number[];
 }
 
 export interface IFieldUpdate {
@@ -13,4 +14,5 @@ export interface IFieldUpdate {
     description?: string;
     capacity?: number;
     slot_duration?: number;
+    sportIds?: number[];
 }

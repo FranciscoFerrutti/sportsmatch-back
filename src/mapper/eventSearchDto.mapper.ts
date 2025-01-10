@@ -29,7 +29,8 @@ export default class EventSearchDtoMapper {
                 count: eventSearch.rate_count
             },
             isRated: eventSearch.is_rated,
-            eventStatus: eventSearch.event_status
+            eventStatus: eventSearch.event_status,
+            duration: eventSearch.duration
         }
         return userDetailDto;
     }

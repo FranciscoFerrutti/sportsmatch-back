@@ -39,6 +39,7 @@ class EventPersistence {
         events.expertise,
         events.sport_id,
         events.organizer_type,
+        events.duration,
         (events.remaining - COUNT(participants.id))::integer AS remaining,
         CASE 
             WHEN events.organizer_type = '${OrganizerType.USER}' THEN users.firstname
@@ -108,7 +109,7 @@ class EventPersistence {
             queryBuilder.addFilter(`events.schedule >= CURRENT_TIMESTAMP`);
     }
 
-    queryBuilder.addGroupBy(`events.id, users.firstname, users.id, clubs.name, clubs.id`);
+    queryBuilder.addGroupBy(`events.id, users.firstname, users.id, clubs.name, clubs.id, events.duration`);
     if (participantIdFilter) queryBuilder.addGroupBy(`participants.status`);
     queryBuilder.addGroupBy(`rate.rating, rate.count`);
     if (participantIdFilter)
@@ -135,7 +136,8 @@ class EventPersistence {
                 is_rated: event.is_rated,
                 rating: event.rating,
                 rate_count: event.rate_count,
-                event_status: event.event_status
+                event_status: event.event_status,
+                duration: event.duration
             };
         });
     }
@@ -162,6 +164,7 @@ class EventPersistence {
                 'expertise',
                 'sportId',
                 'organizerType',
+                'duration',
                 [sequelize.literal('remaining - COUNT(participants.id)'), 'remaining'],
                 [
                     sequelize.literal(`

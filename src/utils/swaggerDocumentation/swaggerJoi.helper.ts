@@ -99,15 +99,38 @@ export function translateJoiToSwagger(joiSchema: Joi.ObjectSchema, source: HTTP_
   }
 
   function addRules(rules: any[], swaggerParameter: any) {
-    if (rules) {
-      rules.forEach((rule: any) => {
+    if (!rules || !swaggerParameter) return;
+
+    rules.forEach((rule: any) => {
+        // Handle custom validators differently
+        if (rule.name === 'custom') {
+            swaggerParameter.type = 'string';
+            swaggerParameter.description = 'Format: DD/MM/YYYY';
+            return;
+        }
+
         if (rule.name === 'min') {
-          swaggerParameter.minimum = rule.args.limit;
+            if (swaggerParameter.type === 'array') {
+                swaggerParameter.minItems = rule.args.limit;
+            } else {
+                swaggerParameter.minimum = rule.args.limit;
+            }
         }
         if (rule.name === 'max') {
-          swaggerParameter.maximum = rule.args.limit;
+            if (swaggerParameter.type === 'array') {
+                swaggerParameter.maxItems = rule.args.limit;
+            } else {
+                swaggerParameter.maximum = rule.args.limit;
+            }
         }
-      });
-    }
+        // Handle array item validations
+        if (swaggerParameter.type === 'array' && swaggerParameter.items) {
+            if (rule.name === 'items') {
+                if (rule.args?.items?.[0]?.rules) {
+                    addRules(rule.args.items[0].rules, swaggerParameter.items);
+                }
+            }
+        }
+    });
   }
 }

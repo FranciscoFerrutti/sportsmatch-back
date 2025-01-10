@@ -13,6 +13,7 @@ export interface IEventDetail {
     expertise: number;
     sportId: number;
     remaining: string;
+    duration: number;
     organizerType: OrganizerType;
     status: number;
     userOwner?: {

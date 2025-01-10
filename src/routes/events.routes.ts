@@ -5,6 +5,7 @@ import EventsController from '../controllers/events.controller';
 import userAuthMiddleware from '../middlewares/jwt.middleware';
 import ParticipantsRoutes from './participants.routes';
 import authMiddleware from '../middlewares/auth.middleware';
+import ReservationsRoutes from "./reservations.routes";
 
 export default class EventsRoutes {
     public router: Router = Router({ mergeParams: true });
@@ -22,5 +23,6 @@ export default class EventsRoutes {
         this.router.post('/', authMiddleware, this.controller.createEvent);
         this.router.use('/:eventId/participants', new ParticipantsRoutes().router);
         this.router.get('/:eventId', this.controller.getEventById);
+        this.router.use('/:eventId/reservations', new ReservationsRoutes().router);
     }
 }

@@ -5,6 +5,13 @@ import NotFoundException from "../exceptions/notFound.exception";
 import GenericException from "../exceptions/generic.exception";
 import { HTTP_STATUS } from "../constants/http.constants";
 import { SlotStatus } from '../constants/slots.constants';
+import {Transaction} from "sequelize";
+import TimeSlot from "../database/models/TimeSlot.model";
+interface ConsecutiveSlots {
+    slotIds: number[];
+    startTime: Date;
+    endTime: Date;
+}
 
 export default class TimeSlotsService {
     private static instance: TimeSlotsService;
@@ -106,4 +113,23 @@ export default class TimeSlotsService {
 
         return await this.persistence.updateSlotStatus(slot, slotStatus);
     }
-} 
+
+    public async findConsecutiveAvailableSlots(
+        fieldId: number,
+        date: Date,
+        duration: number
+    ): Promise<ConsecutiveSlots[]> {
+        return await this.persistence.findConsecutiveAvailableSlots(
+            fieldId,
+            date,
+            duration
+        );
+    }
+
+    public async getSlotsByIds(slotIds: number[]): Promise<TimeSlot[]> {
+        return await this.persistence.getSlotsByIds(slotIds);}
+
+    public async releaseSlots(slotIds: number[], transaction: Transaction): Promise<void> {
+        await this.persistence.releaseSlots(slotIds, transaction);
+    }
+}

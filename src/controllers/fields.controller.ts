@@ -25,19 +25,19 @@ class FieldsController{
             }
         })
         .build())
-    @validateParams(Joi.object({
-        clubId: Joi.number().min(1).required()
-    }))
-    @HttpRequestInfo("/fields/:clubId", HTTP_METHODS.GET)
-    public async getFields(req: Request, res: Response, next: NextFunction) {
-        const clubId = req.params.clubId
-        try {
-            const fields = await this.fieldService.getFields(clubId);
-            res.status(HTTP_STATUS.OK).send(fields);
-        } catch (err) {
-            next(err);
+        @validateParams(Joi.object({
+            clubId: Joi.number().min(1).required()
+        }))
+        @HttpRequestInfo("/fields/:clubId", HTTP_METHODS.GET)
+        public async getFields(req: Request, res: Response, next: NextFunction) {
+            const clubId = req.params.clubId
+            try {
+                const fields = await this.fieldService.getFields(clubId);
+                res.status(HTTP_STATUS.OK).send(fields);
+            } catch (err) {
+                next(err);
+            }
         }
-    }
 
     @document(SwaggerEndpointBuilder.create()
         .responses({
@@ -54,16 +54,17 @@ class FieldsController{
         cost: Joi.number().required().min(0),
         description: Joi.string().min(5).max(250).required(),
         capacity: Joi.number().required(),
-        slot_duration: Joi.number().required()
+        slot_duration: Joi.number().required(),
+        sportIds: Joi.array().items(Joi.number().min(1)).min(1).required()
     }))
     @HttpRequestInfo("/fields", HTTP_METHODS.POST)
     public async postField(req: Request, res: Response, next: NextFunction) {
-        const { name, cost, description, capacity, slot_duration } = req.body;
+        const { name, cost, description, capacity, slot_duration, sportIds } = req.body;
         const ownerId = req.user.id;
 
         try {
             await this.fieldService.createField({
-                ownerId, name, cost, description, capacity, slot_duration
+                ownerId, name, cost, description, capacity, slot_duration, sportIds
             });
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {
