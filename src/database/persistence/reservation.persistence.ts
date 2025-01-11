@@ -151,4 +151,25 @@ export default class ReservationPersistence {
             order: [['created_at', 'DESC']]
         });
     }
+
+    async findAllByEventId(eventId: number): Promise<Reservation[]> {
+        return await Reservation.findAll({
+            where: { eventId },
+            include: [
+                {
+                    model: TimeSlot,
+                    attributes: ['id', 'start_time', 'end_time', 'availability_date']
+                },
+                {
+                    model: Field,
+                    attributes: ['id', 'name', 'club_id'],
+                    include: [{
+                        model: Club,
+                        attributes: ['id', 'name']
+                    }]
+                }
+            ],
+            order: [['created_at', 'DESC']]
+        });
+    }
 } 

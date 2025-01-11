@@ -143,14 +143,12 @@ class ReservationsService {
 
     public async getReservationsByEvent(
         eventId: number,
-    ): Promise<IReservationDetail> {
-        //TODO: SHOULD RETURN ALL THE RESERVATIONS OF AN EVENT
-        const reservation = await this.reservationPersistence.findByEventId(eventId);
-        if (!reservation) {
-            throw new NotFoundException("Reservation");
-        }
+        userId: number
+    ): Promise<IReservationDetail[]> {
+        await this.checkEventOwnership(eventId.toString(), userId);
 
-        return this.mapToReservationDetail(reservation);
+        const reservations = await this.reservationPersistence.findAllByEventId(eventId);
+        return Promise.all(reservations.map(reservation => this.mapToReservationDetail(reservation)));
     }
 
     public async confirmReservation(

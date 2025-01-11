@@ -113,7 +113,37 @@ class ReservationsController {
             "200": {
                 description: "OK",
                 schema: {
-                    type: "object"
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            id: { type: "number" },
+                            eventId: { type: "number" },
+                            fieldId: { type: "number" },
+                            status: { type: "string" },
+                            cost: { type: "number" },
+                            timeSlots: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        id: { type: "number" },
+                                        startTime: { type: "string" },
+                                        endTime: { type: "string" },
+                                        date: { type: "string" }
+                                    }
+                                }
+                            },
+                            field: {
+                                type: "object",
+                                properties: {
+                                    name: { type: "string" },
+                                    clubId: { type: "number" },
+                                    clubName: { type: "string" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         })
@@ -124,10 +154,12 @@ class ReservationsController {
     @HttpRequestInfo("reservations/event/:eventId", HTTP_METHODS.GET)
     public async getReservationsByEvent(req: Request, res: Response, next: NextFunction) {
         try {
+            const userId = parseInt(req.user.id);
+
             const eventId = parseInt(req.params.eventId);
 
-            const reservation = await this.service.getReservationsByEvent(eventId);
-            res.status(HTTP_STATUS.OK).json(reservation);
+            const reservations = await this.service.getReservationsByEvent(eventId, userId);
+            res.status(HTTP_STATUS.OK).json(reservations);
         } catch (error) {
             next(error);
         }
