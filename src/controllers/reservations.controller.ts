@@ -122,11 +122,11 @@ class ReservationsController {
         eventId: Joi.number().required()
     }))
     @HttpRequestInfo("reservations/event/:eventId", HTTP_METHODS.GET)
-    public async getReservationByEvent(req: Request, res: Response, next: NextFunction) {
+    public async getReservationsByEvent(req: Request, res: Response, next: NextFunction) {
         try {
             const eventId = parseInt(req.params.eventId);
 
-            const reservation = await this.service.getReservationByEvent(eventId);
+            const reservation = await this.service.getReservationsByEvent(eventId);
             res.status(HTTP_STATUS.OK).json(reservation);
         } catch (error) {
             next(error);

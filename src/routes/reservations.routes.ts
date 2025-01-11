@@ -20,7 +20,7 @@ export default class ReservationsRoutes {
 
         this.router.post('/event/:eventId', userAuthMiddleware, this.controller.createReservation);
 
-        this.router.get('/event/:eventId', authMiddleware, this.controller.getReservationByEvent);
+        this.router.get('/event/:eventId', userAuthMiddleware, this.controller.getReservationsByEvent);
 
         this.router.patch('/:reservationId/status', clubAuthMiddleware, this.controller.updateReservationStatus);
 

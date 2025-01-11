@@ -133,7 +133,7 @@ class ReservationsService {
             );
 
             await transaction.commit();
-            return await this.getReservationByEvent(eventId);
+            return await this.mapToReservationDetail(reservation);
 
         } catch (error) {
             await transaction.rollback();
@@ -141,9 +141,10 @@ class ReservationsService {
         }
     }
 
-    public async getReservationByEvent(
+    public async getReservationsByEvent(
         eventId: number,
     ): Promise<IReservationDetail> {
+        //TODO: SHOULD RETURN ALL THE RESERVATIONS OF AN EVENT
         const reservation = await this.reservationPersistence.findByEventId(eventId);
         if (!reservation) {
             throw new NotFoundException("Reservation");
