@@ -294,6 +294,14 @@ class ReservationsService {
             });
         }
     }
+
+    public async getReservationsByClub(
+        clubId: number,
+        status?: ReservationStatus
+    ): Promise<IReservationDetail[]> {
+        const reservations = await this.reservationPersistence.findByClub(clubId, status);
+        return Promise.all(reservations.map(reservation => this.mapToReservationDetail(reservation)));
+    }
 }
 
 export default ReservationsService; 

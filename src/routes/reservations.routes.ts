@@ -24,7 +24,7 @@ export default class ReservationsRoutes {
 
         this.router.patch('/:reservationId/status', clubAuthMiddleware, this.controller.updateReservationStatus);
 
-        // this.router.get('/', clubAuthMiddleware, this.controller.getReservationsByClub)
+        this.router.get('/', clubAuthMiddleware, this.controller.getReservationsByClub)
 
         this.router.delete('/:reservationId', authMiddleware, this.controller.cancelReservation);
     }

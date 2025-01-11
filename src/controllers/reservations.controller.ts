@@ -157,7 +157,7 @@ class ReservationsController {
             const { status } = req.body;
 
             const reservation = await this.service.confirmReservation(
-                reservationId, 
+                reservationId,
                 status,
                 userId
             );
@@ -173,8 +173,7 @@ class ReservationsController {
             "204": {
                 description: "No Content"
             }
-        })
-        .build())
+        }) .build())
     @validateParams(Joi.object({
         reservationId: Joi.number().required()
     }))
@@ -189,6 +188,62 @@ class ReservationsController {
 
             await this.service.cancelReservation(reservationId, organizerType, userId);
             res.status(HTTP_STATUS.NO_CONTENT).send();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            id: { type: "number" },
+                            eventId: { type: "number" },
+                            fieldId: { type: "number" },
+                            status: { type: "string" },
+                            cost: { type: "number" },
+                            timeSlots: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        id: { type: "number" },
+                                        startTime: { type: "string" },
+                                        endTime: { type: "string" },
+                                        date: { type: "string" }
+                                    }
+                                }
+                            },
+                            field: {
+                                type: "object",
+                                properties: {
+                                    name: { type: "string" },
+                                    clubId: { type: "number" },
+                                    clubName: { type: "string" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    .build())
+    @validateQuery(Joi.object({
+        status: Joi.string().valid(...Object.values(ReservationStatus)).optional()
+    }))
+    @HttpRequestInfo("reservations", HTTP_METHODS.GET)
+    public async getReservationsByClub(req: Request, res: Response, next: NextFunction) {
+        try {
+            const clubId = parseInt(req.user.id);
+            const status = req.query.status as ReservationStatus | undefined;
+
+            const reservations = await this.service.getReservationsByClub(clubId, status);
+            res.status(HTTP_STATUS.OK).json(reservations);
         } catch (error) {
             next(error);
         }

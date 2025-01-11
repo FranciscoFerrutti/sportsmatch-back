@@ -278,20 +278,6 @@ export default class TimeSlotPersistence {
         });
     }
 
-    // async updateSlotStatus(
-    //     slotIds: number[],
-    //     status: SlotStatus,
-    //     transaction: Transaction
-    // ): Promise<void> {
-    //     await TimeSlot.update(
-    //         { slotStatus: status },
-    //         {
-    //             where: { id: slotIds },
-    //             transaction
-    //         }
-    //     );
-    // }
-
     async getSlotsByFieldAndDate(
         fieldId: number,
         date: Date

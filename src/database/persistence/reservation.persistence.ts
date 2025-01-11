@@ -122,4 +122,33 @@ export default class ReservationPersistence {
             }]
         });
     }
+
+    async findByClub(clubId: number, status?: ReservationStatus): Promise<Reservation[]> {
+        const whereClause: any = {
+            '$field.club_id$': clubId
+        };
+        
+        if (status) {
+            whereClause.status = status;
+        }
+
+        return await Reservation.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: TimeSlot,
+                    attributes: ['id', 'start_time', 'end_time', 'availability_date']
+                },
+                {
+                    model: Field,
+                    attributes: ['id', 'name', 'club_id'],
+                    include: [{
+                        model: Club,
+                        attributes: ['id', 'name']
+                    }]
+                }
+            ],
+            order: [['created_at', 'DESC']]
+        });
+    }
 } 
