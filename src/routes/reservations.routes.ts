@@ -3,6 +3,7 @@ import { urlencoded } from "body-parser";
 import ReservationsController from "../controllers/reservations.controller";
 import userAuthMiddleware from "../middlewares/jwt.middleware";
 import authMiddleware from "../middlewares/auth.middleware";
+import clubAuthMiddleware from "../middlewares/clubauth.middleware";
 
 export default class ReservationsRoutes {
     public router: Router = Router({ mergeParams: true });
@@ -14,19 +15,19 @@ export default class ReservationsRoutes {
 
     private init() {
         this.router.use(urlencoded({ extended: true }));
-        // Search available time slots for an event (only event creator)
-        this.router.get('/available', userAuthMiddleware, this.controller.findAvailableSlots);
 
-        // Create a reservation (only event creator)
-        this.router.post('/', userAuthMiddleware, this.controller.createReservation);
+        this.router.get('/event/:eventId/available', userAuthMiddleware, this.controller.findAvailableSlots);
 
-        this.router.get('/', authMiddleware, this.controller.getReservationByEvent);
+        this.router.post('/event/:eventId', userAuthMiddleware, this.controller.createReservation);
 
-        //TODO: Update reservation status CLUB, fijar dependiendo el estado que altere liberar o no los time_slots
-        // en caso de confirmed hay que pagar
-        this.router.patch('/:reservationId/status', authMiddleware, this.controller.updateReservationStatus);
+        this.router.get('/event/:eventId', authMiddleware, this.controller.getReservationByEvent);
 
-        // TODO Cancel reservation (both club and users) LIBERAR ESPACIOS
+        this.router.patch('/:reservationId/status', clubAuthMiddleware, this.controller.updateReservationStatus);
+
+        // this.router.get('/', clubAuthMiddleware, this.controller.getReservationsByClub)
+
         this.router.delete('/:reservationId', authMiddleware, this.controller.cancelReservation);
     }
+
+    //TODO: ONCE COMPLETED THE RESERVATION UPDATE EVENTS DETAILS
 } 

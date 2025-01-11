@@ -6,7 +6,8 @@ import { HttpRequestInfo, validateBody, validateParams, validateQuery } from "..
 import { HTTP_METHODS, HTTP_STATUS } from "../constants/http.constants";
 import Joi from "joi";
 import ReservationsService from "../services/reservations.service";
-import { ReservationStatus } from "../constants/reservation.constants";
+import {ReservationClubUpdateStatus, ReservationStatus} from "../constants/reservation.constants";
+import {OrganizerType} from "../constants/event.constants";
 
 @autobind
 class ReservationsController {
@@ -57,7 +58,7 @@ class ReservationsController {
         radius: Joi.number().min(0).optional(),
         maxResults: Joi.number().min(1).optional()
     }))
-    @HttpRequestInfo("events/:eventId/reservations/available", HTTP_METHODS.GET)
+    @HttpRequestInfo("reservations/event/:eventId/available", HTTP_METHODS.GET)
     public async findAvailableSlots(req: Request, res: Response, next: NextFunction) {
         try {
             const eventId = parseInt(req.params.eventId);
@@ -94,7 +95,7 @@ class ReservationsController {
         fieldId: Joi.number().required(),
         slotIds: Joi.array().items(Joi.number()).required()
     }))
-    @HttpRequestInfo("events/:eventId/reservations", HTTP_METHODS.POST)
+    @HttpRequestInfo("reservations/event/:eventId", HTTP_METHODS.POST)
     public async createReservation(req: Request, res: Response, next: NextFunction) {
         try {
             const eventId = parseInt(req.params.eventId);
@@ -120,7 +121,7 @@ class ReservationsController {
     @validateParams(Joi.object({
         eventId: Joi.number().required()
     }))
-    @HttpRequestInfo("events/:eventId/reservations", HTTP_METHODS.GET)
+    @HttpRequestInfo("reservations/event/:eventId", HTTP_METHODS.GET)
     public async getReservationByEvent(req: Request, res: Response, next: NextFunction) {
         try {
             const eventId = parseInt(req.params.eventId);
@@ -146,18 +147,21 @@ class ReservationsController {
         reservationId: Joi.number().required()
     }))
     @validateBody(Joi.object({
-        status: Joi.string().valid(...Object.values(ReservationStatus)).required()
+        status: Joi.string().valid(...Object.values(ReservationClubUpdateStatus)).required()
     }))
-    @HttpRequestInfo("events/:eventId/reservations/:reservationId/status", HTTP_METHODS.PATCH)
+    @HttpRequestInfo("reservations/:reservationId/status", HTTP_METHODS.PATCH)
     public async updateReservationStatus(req: Request, res: Response, next: NextFunction) {
         try {
+            const userId = parseInt(req.user.id);
             const reservationId = parseInt(req.params.reservationId);
             const { status } = req.body;
 
-            const reservation = await this.service.updateReservationStatus(
+            const reservation = await this.service.confirmReservation(
                 reservationId, 
-                status
+                status,
+                userId
             );
+
             res.status(HTTP_STATUS.OK).json(reservation);
         } catch (error) {
             next(error);
@@ -174,12 +178,16 @@ class ReservationsController {
     @validateParams(Joi.object({
         reservationId: Joi.number().required()
     }))
-    @HttpRequestInfo("events/:eventId/reservations/:reservationId", HTTP_METHODS.DELETE)
+    @HttpRequestInfo("reservations/:reservationId", HTTP_METHODS.DELETE)
     public async cancelReservation(req: Request, res: Response, next: NextFunction) {
         try {
+            const userId = parseInt(req.user.id);
+
+            const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
+
             const reservationId = parseInt(req.params.reservationId);
 
-            await this.service.cancelReservation(reservationId);
+            await this.service.cancelReservation(reservationId, organizerType, userId);
             res.status(HTTP_STATUS.NO_CONTENT).send();
         } catch (error) {
             next(error);

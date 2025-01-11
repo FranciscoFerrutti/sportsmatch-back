@@ -3,4 +3,8 @@ export enum ReservationStatus {
     CONFIRMED = 'confirmed',
     CANCELLED = 'cancelled',
     COMPLETED = 'completed'
-} 
+}
+
+export enum ReservationClubUpdateStatus {
+    CONFIRMED = 'confirmed',
+}

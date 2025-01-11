@@ -1,5 +1,4 @@
-import { Transaction } from "sequelize";
-import { IAvailableSlotGroup, IReservationDetail } from "../interfaces/reservation.interface";
+import {IAvailableSlotGroup, IReservationDetail} from "../interfaces/reservation.interface";
 import ReservationPersistence from "../database/persistence/reservation.persistence";
 import EventsService from "./events.service";
 import FieldsService from "./field.service";
@@ -7,11 +6,12 @@ import TimeSlotsService from "./timeslots.service";
 import ClubService from "./club.service";
 import NotFoundException from "../exceptions/notFound.exception";
 import GenericException from "../exceptions/generic.exception";
-import { HTTP_STATUS } from "../constants/http.constants";
-import { ReservationStatus } from "../constants/reservation.constants";
-import { SlotStatus } from "../constants/slots.constants";
+import {HTTP_STATUS} from "../constants/http.constants";
+import {ReservationStatus} from "../constants/reservation.constants";
+import {SlotStatus} from "../constants/slots.constants";
 import IEventDetailDto from "../dto/eventDetail.dto";
 import TimeSlot from "../database/models/TimeSlot.model";
+import {OrganizerType} from "../constants/event.constants";
 
 class ReservationsService {
     private static instance: ReservationsService;
@@ -152,43 +152,47 @@ class ReservationsService {
         return this.mapToReservationDetail(reservation);
     }
 
-    public async updateReservationStatus(
+    public async confirmReservation(
         reservationId: number,
-        status: ReservationStatus
+        status: ReservationStatus,
+        userId: number
     ): Promise<IReservationDetail> {
-        const reservation = await this.reservationPersistence.findById(reservationId);
-        if (!reservation) {
-            throw new NotFoundException("Reservation");
-        }
+        const reservation = await this.findReservation(reservationId)
 
-        // Update status
+        await this.checkFieldOwnership(reservation.field?.club?.id, userId)
+
         const updatedReservation = await this.reservationPersistence.updateStatus(
             reservationId,
             status
         );
 
+        //TODO: REQUEST PAYMENT
+
         return this.mapToReservationDetail(updatedReservation);
     }
 
     public async cancelReservation(
-        reservationId: number
+        reservationId: number,
+        organizerType: OrganizerType,
+        userId: number
     ): Promise<void> {
-        const reservation = await this.reservationPersistence.findById(reservationId);
-        if (!reservation) {
-            throw new NotFoundException("Reservation");
+        const reservation = await this.findReservation(reservationId)
+
+        if (organizerType === OrganizerType.CLUB) {
+            await this.checkFieldOwnership(reservation.field?.club?.id, userId);
+        } else {
+            await this.checkEventOwnership(reservation.eventId.toString(), userId);
         }
 
         const transaction = await this.reservationPersistence.startTransaction();
 
         try {
-            // Update reservation status
             await this.reservationPersistence.updateStatus(
                 reservationId,
                 ReservationStatus.CANCELLED,
                 transaction
             );
 
-            // Release time slots
             await this.timeSlotsService.releaseSlots(
                 reservation.timeSlots.map(slot => slot.id),
                 transaction
@@ -259,6 +263,35 @@ class ReservationsService {
                 clubName: field.club.name
             }
         };
+    }
+
+    private async checkFieldOwnership(clubId: number, userId: number){
+        if (clubId !== userId) {
+            throw new GenericException({
+                message: "Field does not belong to club",
+                status: HTTP_STATUS.FORBIDDEN,
+                internalStatus: "INVALID_FIELD_ACCESS"
+            });
+        }
+    }
+
+    private async findReservation(reservationId: number){
+        const reservation = await this.reservationPersistence.findById(reservationId);
+        if (!reservation) {
+            throw new NotFoundException("Reservation");
+        }
+        return reservation
+    }
+
+    private async checkEventOwnership(eventId: string, userId: number) {
+        const event = await this.eventsService.getEventById(eventId);
+        if (!event || event.owner.id !== userId) {
+            throw new GenericException({
+                message: "Event does not belong to user",
+                status: HTTP_STATUS.FORBIDDEN,
+                internalStatus: "INVALID_EVENT_ACCESS"
+            });
+        }
     }
 }
 

@@ -23,6 +23,5 @@ export default class EventsRoutes {
         this.router.post('/', authMiddleware, this.controller.createEvent);
         this.router.use('/:eventId/participants', new ParticipantsRoutes().router);
         this.router.get('/:eventId', this.controller.getEventById);
-        this.router.use('/:eventId/reservations', new ReservationsRoutes().router);
     }
 }
