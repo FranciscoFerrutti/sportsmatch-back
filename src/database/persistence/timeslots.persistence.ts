@@ -191,35 +191,46 @@ export default class TimeSlotPersistence {
             
             if (currentGroup.length === 0) {
                 currentGroup.push(currentSlot.id);
+                // Check if we only need one slot
+                if (slotsNeeded === 1) {
+                    consecutiveGroups.push({
+                        slotIds: [...currentGroup],
+                        startTime: currentSlot.start_time,
+                        endTime: currentSlot.end_time
+                    });
+                    currentGroup = [];
+                }
             } else {
                 const prevSlot = slots[i - 1];
                 
                 // Check if slots are consecutive
                 const prevEndTime = prevSlot.end_time;
                 const currentStartTime = slots[i].start_time;
+                
                 if (prevEndTime === currentStartTime) {
                     currentGroup.push(currentSlot.id);
-                } else {
-                    // If we have enough consecutive slots, add them to groups
-                    if (currentGroup.length >= slotsNeeded) {
+                    // Check if we've reached the needed number of slots
+                    if (currentGroup.length === slotsNeeded) {
                         consecutiveGroups.push({
                             slotIds: [...currentGroup],
-                            startTime: slots[i - currentGroup.length].start_time,
-                            endTime: slots[i - 1].end_time
+                            startTime: slots[i - (currentGroup.length - 1)].start_time,
+                            endTime: currentSlot.end_time
                         });
+                        currentGroup = [];
                     }
-                    // Start a new group
+                } else {
+                    // Start a new group as slots are not consecutive
                     currentGroup = [currentSlot.id];
+                    // Check if we only need one slot
+                    if (slotsNeeded === 1) {
+                        consecutiveGroups.push({
+                            slotIds: [currentSlot.id],
+                            startTime: currentSlot.start_time,
+                            endTime: currentSlot.end_time
+                        });
+                        currentGroup = [];
+                    }
                 }
-            }
-
-            // Check if we need to add the last group in the current iteration
-            if (i === slots.length - 1 && currentGroup.length >= slotsNeeded) {
-                consecutiveGroups.push({
-                    slotIds: [...currentGroup],
-                    startTime: slots[i - (currentGroup.length - 1)].start_time,
-                    endTime: slots[i].end_time
-                });
             }
         }
 
