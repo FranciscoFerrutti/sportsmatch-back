@@ -29,4 +29,5 @@ export interface EventQuery {
     rating: number;
     rate_count: number;
     event_status?: number;
+    duration: number;
 }

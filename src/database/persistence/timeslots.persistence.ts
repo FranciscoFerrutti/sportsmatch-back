@@ -3,7 +3,13 @@ import TimeSlot from '../models/TimeSlot.model';
 import { Op } from 'sequelize';
 import { SlotStatus } from '../../constants/slots.constants';
 import {CreateTimeSlotsDTO} from "../../dto/timeslots.dto";
+import Field from "../models/Field.model";
 
+interface ConsecutiveSlots {
+    slotIds: number[];
+    startTime: Date;
+    endTime: Date;
+}
 interface CreateTimeSlotsWithDurationDTO extends CreateTimeSlotsDTO {
     slotDuration: number;
 }
@@ -150,5 +156,138 @@ export default class TimeSlotPersistence {
         slot.slotStatus = slotStatus;
         await slot.save();
         return slot;
+    }
+
+    async findConsecutiveAvailableSlots(
+        fieldId: number,
+        date: Date,
+        duration: number
+    ) {
+        //TODO: NO ESTA MATCHEANDO POR HORA DE INICIO(+=- CUANTAS HORAS)?
+
+        // Adjust the input date to Argentina timezone (UTC-3)
+        const argentinaDate = new Date(date.getTime() - (3 * 60 * 60 * 1000));
+
+        // Get field to know slot duration
+        const field = await Field.findByPk(fieldId);
+        if (!field) return [];
+
+        const slotsNeeded = Math.ceil(duration / field.slot_duration);
+        const slots = await TimeSlot.findAll({
+            where: {
+                field_id: fieldId,
+                availability_date: argentinaDate,
+                slotStatus: SlotStatus.AVAILABLE
+            },
+            order: [['start_time', 'ASC']]
+        });
+
+        const consecutiveGroups: ConsecutiveSlots[] = [];
+        let currentGroup: number[] = [];
+        
+        // Process all slots
+        for (let i = 0; i < slots.length; i++) {
+            const currentSlot = slots[i];
+            
+            if (currentGroup.length === 0) {
+                currentGroup.push(currentSlot.id);
+                // Check if we only need one slot
+                if (slotsNeeded === 1) {
+                    consecutiveGroups.push({
+                        slotIds: [...currentGroup],
+                        startTime: currentSlot.start_time,
+                        endTime: currentSlot.end_time
+                    });
+                    currentGroup = [];
+                }
+            } else {
+                const prevSlot = slots[i - 1];
+                
+                // Check if slots are consecutive
+                const prevEndTime = prevSlot.end_time;
+                const currentStartTime = slots[i].start_time;
+                
+                if (prevEndTime === currentStartTime) {
+                    currentGroup.push(currentSlot.id);
+                    // Check if we've reached the needed number of slots
+                    if (currentGroup.length === slotsNeeded) {
+                        consecutiveGroups.push({
+                            slotIds: [...currentGroup],
+                            startTime: slots[i - (currentGroup.length - 1)].start_time,
+                            endTime: currentSlot.end_time
+                        });
+                        currentGroup = [];
+                    }
+                } else {
+                    // Start a new group as slots are not consecutive
+                    currentGroup = [currentSlot.id];
+                    // Check if we only need one slot
+                    if (slotsNeeded === 1) {
+                        consecutiveGroups.push({
+                            slotIds: [currentSlot.id],
+                            startTime: currentSlot.start_time,
+                            endTime: currentSlot.end_time
+                        });
+                        currentGroup = [];
+                    }
+                }
+            }
+        }
+
+        return consecutiveGroups;
+    }
+
+    async getSlotsByIds(slotIds: number[]): Promise<TimeSlot[]> {
+        return await TimeSlot.findAll({
+            where: {
+                id: slotIds
+            },
+            include: [{
+                model: Field,
+                attributes: ['id', 'slot_duration', 'cost_per_minute']
+            }]
+        });
+    }
+
+    async releaseSlots(
+        slotIds: number[],
+        transaction: Transaction
+    ): Promise<void> {
+        await TimeSlot.update(
+            {
+                reservationId: null,
+                slotStatus: SlotStatus.AVAILABLE
+            },
+            {
+                where: {
+                    id: slotIds
+                },
+                transaction
+            }
+        );
+    }
+
+    async validateSlots(slotIds: number[], fieldId: number): Promise<TimeSlot[]> {
+        return await TimeSlot.findAll({
+            where: {
+                id: slotIds,
+                field_id: fieldId,
+                slotStatus: SlotStatus.AVAILABLE
+            },
+            order: [['start_time', 'ASC']]
+        });
+    }
+
+    async getSlotsByFieldAndDate(
+        fieldId: number,
+        date: Date
+    ): Promise<TimeSlot[]> {
+        return await TimeSlot.findAll({
+            where: {
+                field_id: fieldId,
+                availability_date: date
+            },
+            order: [['start_time', 'ASC']]
+        });
     }
 } 

@@ -1,5 +1,3 @@
-
-
 export default interface IEventQueryDto {
     id: string;
     description: string;
@@ -8,12 +6,13 @@ export default interface IEventQueryDto {
     expertise: number;
     sportId: number;
     remaining: string;
+    duration: number;
     organizerType: string;
     owner: { 
         firstName: string,
         id: number 
     };
-    participantStatus?: boolean; // these two are for participants id filter
+    participantStatus?: boolean;
     isRated?: boolean;
     rating: {
         rate: number,

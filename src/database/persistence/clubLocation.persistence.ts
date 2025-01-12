@@ -64,7 +64,11 @@ class ClubLocationPersistence {
                 longitude: {
                     [Op.between]: [minLon, maxLon]
                 }
-            }
+            },
+            include: [{
+                model: Club,
+                required: true
+            }]
         });
 
         // Filter locations by exact distance using haversine formula

@@ -22,6 +22,7 @@ export default class EventDetailDtoMapper {
             expertise: event.expertise,
             sportId: event.sportId,
             remaining: event.remaining,
+            duration: event.duration,
             status: event.status,
             owner
         }

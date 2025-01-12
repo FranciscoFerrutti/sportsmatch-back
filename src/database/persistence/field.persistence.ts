@@ -1,5 +1,10 @@
+import { Transaction } from "sequelize";
 import Field from "../models/Field.model"
+import Sport from "../models/Sport.model"
+import FieldSport from "../models/FieldSport.model"
 import {IField, IFieldUpdate} from "../../interfaces/field.interface";
+import Club from "../models/Club.model";
+import ClubLocation from "../models/ClubLocation.model";
 
 class FieldPersistence{
     static async getClubFields(clubId: string): Promise<Field[] | null>{
@@ -18,7 +23,22 @@ class FieldPersistence{
     }
 
     static async getFieldById(id: string): Promise<Field | null > {
-        return await Field.findOne({ where: { id: id }});
+        return await Field.findOne({
+            where: { id },
+            include: [
+                {
+                    model: Club,
+                    include: [{
+                        model: ClubLocation,
+                        attributes: ['address', 'latitude', 'longitude']
+                    }]
+                },
+                {
+                    model: Sport,
+                    through: { attributes: [] } // Exclude junction table attributes
+                }
+            ]
+        });
     }
 
     static async updateField(field: Field, fieldData: IFieldUpdate) {
@@ -33,6 +53,54 @@ class FieldPersistence{
 
     static async removeField(field: Field){
         await field.destroy();
+    }
+
+    static async getFieldsBySport(clubId: string, sportId: number): Promise<Field[]> {
+        return await Field.findAll({
+            where: { club_id: clubId },
+            include: [
+                {
+                    model: Sport,
+                    where: { id: sportId },
+                    through: { attributes: [] }
+                },
+                {
+                    model: Club,
+                    include: [{
+                        model: ClubLocation,
+                        attributes: ['address', 'latitude', 'longitude']
+                    }]
+                }
+            ]
+        });
+    }
+
+    static async associateFieldSports(
+        fieldId: number, 
+        sportIds: number[], 
+        transaction: Transaction
+    ): Promise<void> {
+        const fieldSports = sportIds.map(sportId => ({
+            fieldId,
+            sportId
+        }));
+        
+        await FieldSport.bulkCreate(fieldSports, { transaction });
+    }
+
+    static async updateFieldSports(
+        fieldId: number,
+        sportIds: number[],
+        transaction: Transaction
+    ): Promise<void> {
+        // Remove existing associations
+        await FieldSport.destroy({
+            where: { fieldId },
+            transaction
+        });
+
+        // Create new associations
+        await this.associateFieldSports(fieldId, sportIds, transaction);
     }
 }
 

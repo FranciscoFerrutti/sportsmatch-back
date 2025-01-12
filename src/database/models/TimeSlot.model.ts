@@ -12,6 +12,7 @@ import {
 } from "sequelize-typescript";
 import Field from "./Field.model";
 import { SlotStatus } from "../../constants/slots.constants";
+import Reservation from "./Reservation.model";
 
 @Table({
     timestamps: true,
@@ -27,6 +28,14 @@ export default class TimeSlot extends Model {
     @ForeignKey(() => Field)
     @Column(DataType.INTEGER)
     field_id!: number;
+
+    @ForeignKey(() => Reservation)
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+        field: 'reservation_id'
+    })
+    reservationId!: number | null;
 
     @Column({
         allowNull: false,
@@ -58,6 +67,9 @@ export default class TimeSlot extends Model {
 
     @BelongsTo(() => Field)
     field!: Field;
+
+    @BelongsTo(() => Reservation)
+    reservation!: Reservation;
 
     @CreatedAt
     created_at!: Date;

@@ -1,5 +1,3 @@
-
-
 export default interface IEventDetailDto {
     id: string;
     description: string;
@@ -8,6 +6,7 @@ export default interface IEventDetailDto {
     expertise: number;
     sportId: number;
     remaining: string;
+    duration: number;
     owner: { 
         firstName: string,
         id: number 

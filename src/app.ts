@@ -12,6 +12,7 @@ import AuthRoutes from './routes/auth.routes';
 import ClubAuthRoutes from "./routes/clubAuth.routes";
 import ClubRoutes from "./routes/clubs.routes";
 import FieldsRoutes from "./routes/fields.routes";
+import ReservationsRoutes from "./routes/reservations.routes";
 
 class App {
     public app: Application;
@@ -69,6 +70,7 @@ class App {
         this.app.use('/clubauth', new ClubAuthRoutes().router);
         this.app.use('/clubs', new ClubRoutes().router);
         this.app.use('/fields', new FieldsRoutes().router);
+        this.app.use('/reservations', new ReservationsRoutes().router);
     }
 
     private initializeSwaggerApp(): void {

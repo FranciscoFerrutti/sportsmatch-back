@@ -1,9 +1,11 @@
 // Field.model.ts
 import {
     Column, Model, Table, DataType, ForeignKey, BelongsTo,
-    PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt
+    PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, BelongsToMany
 } from "sequelize-typescript";
 import Club from "./Club.model"; // Import the Club model
+import Sport from "./Sport.model";
+import FieldSport from "./FieldSport.model";
 
 @Table({
     timestamps: true,
@@ -34,6 +36,9 @@ export default class Field extends Model {
 
     @BelongsTo(() => Club) // Define the belongsTo relationship
     club!: Club;
+
+    @BelongsToMany(() => Sport, () => FieldSport)
+    sports!: Sport[];
 
     @CreatedAt
     created_at!: Date;
