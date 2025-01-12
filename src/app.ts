@@ -36,7 +36,11 @@ class App {
         if (this.setBasicConfig) {
             this.app.use(express.json({ limit: '50mb' }));
             this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
-            this.app.use(cors());
+            this.app.use(cors(
+                {
+                    exposedHeaders: ['c-api-key'],
+                }
+            ));
         }
 
         this.app.set('trust proxy', 1);
