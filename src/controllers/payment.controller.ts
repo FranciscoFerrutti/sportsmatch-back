@@ -6,10 +6,16 @@ import { validateParams, HttpRequestInfo, validateBody, validateQuery, JoiEnum }
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 import { document } from "../utils/swaggerDocumentation/annotations";
 import GenericException from "../exceptions/generic.exception";
-import { MercadoPagoConfig, Payment } from 'mercadopago';
+import { PaymentService } from '../services/payment.service';
 
 @autobind
 export default class PaymentController{
+    private readonly paymentService: PaymentService;
+
+    constructor() {
+        this.paymentService = PaymentService.getInstance();
+    }
+
     @document(SwaggerEndpointBuilder.create()
         .responses({
             "200": {
@@ -22,14 +28,12 @@ export default class PaymentController{
         .build())
     @HttpRequestInfo("/payments/process_payment", HTTP_METHODS.POST)
     public async addPayment(req: Request, res: Response, next: NextFunction){
-        const client = new MercadoPagoConfig({
-            accessToken: 'TEST-7292404225301445-020515-fdcc4e758f206ac7b4779c131ad17e0d-818545244', options: { timeout: 5000} });
-
-        console.log(req.body)
-        const payment = new Payment(client);
-        payment.create({ body: req.body })
-            .then(console.log)
-            .catch(console.log);
+        try {
+            const result = await this.paymentService.processPayment(req.body);
+            return res.json(result);
+        } catch (error) {
+            next(error);
+        }
     }
 }
 
