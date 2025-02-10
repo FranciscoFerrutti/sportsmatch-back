@@ -20,4 +20,11 @@ export default class PaymentPersistence {
     }): Promise<Payment> {
         return Payment.create(paymentData);
     }
+
+    async findByReservationId(reservationId: number): Promise<Payment[]> {
+        return Payment.findAll({
+            where: { reservationId },
+            order: [['created_at', 'DESC']]
+        });
+    }
 } 

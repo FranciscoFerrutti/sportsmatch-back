@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { urlencoded } from 'body-parser';
-import userBasicAuthMiddleware from "../middlewares/basic.middleware";
+import userAuthMiddleware from "../middlewares/jwt.middleware";
 import PaymentController from "../controllers/payment.controller";
 
 export default class PaymentRoutes{
@@ -16,5 +16,6 @@ export default class PaymentRoutes{
         // this.router.use(cors());
 
         this.router.post('/:reservationId/process_payment', this.controller.addPayment);
+        this.router.get('/:reservationId', userAuthMiddleware, this.controller.getPaymentsByReservationId);
     }
 }

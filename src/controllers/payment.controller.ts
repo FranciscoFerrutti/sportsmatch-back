@@ -26,6 +26,9 @@ export default class PaymentController{
             }
         })
         .build())
+    @validateParams(Joi.object({
+        reservationId: Joi.number().required()
+    }))
     @HttpRequestInfo("/payments/:reservationId/process_payment", HTTP_METHODS.POST)
     public async addPayment(req: Request, res: Response, next: NextFunction){
         try {
@@ -33,6 +36,29 @@ export default class PaymentController{
             
             const result = await this.paymentService.processPayment(reservationId, req.body);
             return res.json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .description('Get payments by reservation ID')
+        .responses({
+            "200": { description: 'List of payments' },
+            "404": { description: 'Reservation not found' }
+        })
+        .build()
+    )
+    @validateParams(Joi.object({
+        reservationId: Joi.number().required()
+    }))
+    @HttpRequestInfo("/payments/:reservationId", HTTP_METHODS.GET)
+    public async getPaymentsByReservationId(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = parseInt(req.user.id);
+            const reservationId = parseInt(req.params.reservationId);
+            const payments = await this.paymentService.getPaymentsByReservationId(reservationId, userId);
+            return res.json(payments);
         } catch (error) {
             next(error);
         }

@@ -4,6 +4,7 @@ import ReservationsService from './reservations.service';
 import { PaymentStatus } from '../database/models/Payment.model';
 import GenericException from '../exceptions/generic.exception';
 import { HTTP_STATUS } from '../constants/http.constants';
+import { OrganizerType } from "../constants/event.constants";
 
 export class PaymentService {
     private static instance: PaymentService;
@@ -108,5 +109,20 @@ export class PaymentService {
             default:
                 return PaymentStatus.PENDING;
         }
+    }
+
+    async getPaymentsByReservationId(reservationId: number, userId: number) {
+        const reservation = await this.reservationService.findReservationWithOwner(reservationId);
+        
+        if (reservation.event.organizerType !== OrganizerType.USER || 
+            reservation.event.ownerId !== userId) {
+            throw new GenericException({
+                status: HTTP_STATUS.FORBIDDEN,
+                message: "User is not authorized to view these payments",
+                internalStatus: "UNAUTHORIZED_ACCESS"
+            });
+        }
+        
+        return await this.paymentPersistence.findByReservationId(reservationId);
     }
 } 

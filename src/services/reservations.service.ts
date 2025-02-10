@@ -12,6 +12,7 @@ import {SlotStatus} from "../constants/slots.constants";
 import IEventDetailDto from "../dto/eventDetail.dto";
 import TimeSlot from "../database/models/TimeSlot.model";
 import {OrganizerType} from "../constants/event.constants";
+import Reservation from "../database/models/Reservation.model";
 
 class ReservationsService {
     private static instance: ReservationsService;
@@ -311,6 +312,14 @@ class ReservationsService {
             ReservationStatus.COMPLETED
         );
         return this.mapToReservationDetail(updatedReservation);
+    }
+
+    public async findReservationWithOwner(reservationId: number): Promise<Reservation> {
+        const reservation = await this.reservationPersistence.findReservationWithOwner(reservationId);
+        if (!reservation) {
+            throw new NotFoundException("Reservation");
+        }
+        return reservation;
     }
 }
 
