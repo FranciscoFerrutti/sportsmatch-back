@@ -1,4 +1,5 @@
-import Payment, { PaymentStatus } from "../models/Payment.model";
+import { PaymentStatus } from '../../constants/payment.constants';
+import Payment from "../models/Payment.model";
 import { Transaction } from "sequelize";
 
 export default class PaymentPersistence {

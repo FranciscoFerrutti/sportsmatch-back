@@ -1,7 +1,7 @@
 import { MercadoPagoConfig, Payment as MPPayment } from 'mercadopago';
 import PaymentPersistence from '../database/persistence/payment.persistence';
 import ReservationsService from './reservations.service';
-import { PaymentStatus } from '../database/models/Payment.model';
+import { PaymentStatus } from '../constants/payment.constants';
 import GenericException from '../exceptions/generic.exception';
 import { HTTP_STATUS } from '../constants/http.constants';
 import { OrganizerType } from "../constants/event.constants";

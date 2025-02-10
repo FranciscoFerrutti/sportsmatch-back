@@ -11,12 +11,7 @@ import {
     UpdatedAt
 } from "sequelize-typescript";
 import Reservation from "./Reservation.model";
-
-export enum PaymentStatus {
-    APPROVED = 'approved',
-    REJECTED = 'rejected',
-    PENDING = 'pending'
-}
+import { PaymentStatus } from "../../constants/payment.constants";
 
 @Table({
     timestamps: true,
