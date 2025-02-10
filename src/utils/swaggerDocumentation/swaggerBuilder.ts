@@ -48,7 +48,7 @@ export class SwaggerBuilder {
       const methods = Object.keys(this.paths[path]);
       methods.forEach((method) => {
         if (this.paths[path][method].tags === undefined) {
-          this.paths[path][method].tags = [toCamelCase(path.split('/')[1])] ?? [];
+          this.paths[path][method].tags = [toCamelCase(path.split('/')[1])];
         }
       });
     });
