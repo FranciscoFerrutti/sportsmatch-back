@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
 import dotenv from "dotenv";
+import path from "path";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
             rejectUnauthorized: false,
         },
     },
+    models: [path.join(__dirname, "./models")],
     logging: console.log,
 });
 
