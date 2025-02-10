@@ -36,7 +36,25 @@ export default class ReservationPersistence {
             }
         );
 
-        return reservation;
+        // Return the reservation with its relationships
+        return await Reservation.findOne({
+            where: { id: reservation.id },
+            include: [
+                {
+                    model: TimeSlot,
+                    attributes: ['id', 'start_time', 'end_time', 'availability_date']
+                },
+                {
+                    model: Field,
+                    attributes: ['id', 'name', 'club_id'],
+                    include: [{
+                        model: Club,
+                        attributes: ['id', 'name']
+                    }]
+                }
+            ],
+            transaction
+        }) as Reservation;
     }
 
     async findById(reservationId: number): Promise<Reservation | null> {

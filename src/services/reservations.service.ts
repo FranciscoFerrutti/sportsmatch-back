@@ -106,12 +106,12 @@ class ReservationsService {
         slotIds: number[],
         userId: string
     ): Promise<IReservationDetail> {
-        // Validate event ownership
-        await this.getAndValidateEventOwnership(eventId, userId);
-
         const transaction = await this.reservationPersistence.startTransaction();
-
+        
         try {
+            // Validate event ownership
+            await this.getAndValidateEventOwnership(eventId, userId);
+
             // Validate slots belong to the field and are available
             const slots = await this.timeSlotsService.getSlotsByIds(slotIds);
             this.validateSlots(slots, fieldId);
@@ -136,7 +136,11 @@ class ReservationsService {
             return await this.mapToReservationDetail(reservation);
 
         } catch (error) {
-            await transaction.rollback();
+            try {
+                await transaction.rollback();
+            } catch {
+                // Ignore rollback error if transaction is already finished
+            }
             throw error;
         }
     }
@@ -274,7 +278,7 @@ class ReservationsService {
         }
     }
 
-    private async findReservation(reservationId: number){
+    public async findReservation(reservationId: number){
         const reservation = await this.reservationPersistence.findById(reservationId);
         if (!reservation) {
             throw new NotFoundException("Reservation");
@@ -299,6 +303,14 @@ class ReservationsService {
     ): Promise<IReservationDetail[]> {
         const reservations = await this.reservationPersistence.findByClub(clubId, status);
         return Promise.all(reservations.map(reservation => this.mapToReservationDetail(reservation)));
+    }
+
+    public async completeReservation(reservationId: number): Promise<IReservationDetail> {
+        const updatedReservation = await this.reservationPersistence.updateStatus(
+            reservationId,
+            ReservationStatus.COMPLETED
+        );
+        return this.mapToReservationDetail(updatedReservation);
     }
 }
 

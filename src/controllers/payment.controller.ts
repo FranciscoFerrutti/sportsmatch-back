@@ -26,10 +26,12 @@ export default class PaymentController{
             }
         })
         .build())
-    @HttpRequestInfo("/payments/process_payment", HTTP_METHODS.POST)
+    @HttpRequestInfo("/payments/:reservationId/process_payment", HTTP_METHODS.POST)
     public async addPayment(req: Request, res: Response, next: NextFunction){
         try {
-            const result = await this.paymentService.processPayment(req.body);
+            const reservationId = parseInt(req.params.reservationId);
+            
+            const result = await this.paymentService.processPayment(reservationId, req.body);
             return res.json(result);
         } catch (error) {
             next(error);

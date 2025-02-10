@@ -15,6 +15,6 @@ export default class PaymentRoutes{
         this.router.use(urlencoded({ extended: true }));
         // this.router.use(cors());
 
-        this.router.post('/process_payment', this.controller.addPayment);
+        this.router.post('/:reservationId/process_payment', this.controller.addPayment);
     }
 }
