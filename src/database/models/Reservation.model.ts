@@ -15,6 +15,7 @@ import Event from "./Event.model";
 import Field from "./Field.model";
 import TimeSlot from "./TimeSlot.model";
 import { ReservationStatus } from "../../constants/reservation.constants";
+import Payment from "./Payment.model";
 
 @Table({
     timestamps: true,
@@ -50,7 +51,10 @@ export default class Reservation extends Model {
     })
     status!: ReservationStatus;
 
-    @Column(DataType.FLOAT)
+    @Column({
+        type: DataType.DECIMAL(10, 2),
+        allowNull: false
+    })
     cost!: number;
 
     @BelongsTo(() => Event)
@@ -62,9 +66,20 @@ export default class Reservation extends Model {
     @HasMany(() => TimeSlot)
     timeSlots!: TimeSlot[];
 
+    @HasMany(() => Payment)
+    payments!: Payment[];
+
     @CreatedAt
     created_at!: Date;
 
     @UpdatedAt
     updated_at!: Date;
+
+    public isConfirmed(): boolean {
+        return this.status === ReservationStatus.CONFIRMED;
+    }
+
+    public getCost(): number {
+        return Number(this.cost);
+    }
 } 

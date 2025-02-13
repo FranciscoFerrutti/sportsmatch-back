@@ -14,6 +14,7 @@ import ClubRoutes from "./routes/clubs.routes";
 import FieldsRoutes from "./routes/fields.routes";
 import ReservationsRoutes from "./routes/reservations.routes";
 import SportsRoutes from "./routes/sports.routes";
+import PaymentRoutes from "./routes/payment.routes";
 
 class App {
     public app: Application;
@@ -73,6 +74,7 @@ class App {
         this.app.use('/fields', new FieldsRoutes().router);
         this.app.use('/reservations', new ReservationsRoutes().router);
         this.app.use('/sports', new SportsRoutes().router);
+        this.app.use('/payments', new PaymentRoutes().router);
     }
 
     private initializeSwaggerApp(): void {
