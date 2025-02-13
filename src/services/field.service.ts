@@ -29,7 +29,22 @@ class FieldService{
     }
 
     public async getFields(clubId: string): Promise<any> {
-        return await FieldPersistence.getClubFields(clubId);
+        const fields = await FieldPersistence.getClubFields(clubId);
+
+        console.log("📢 Datos obtenidos de la BD en getFields:", JSON.stringify(fields, null, 2));
+
+        return fields?.map(field => ({
+            id: field.id,
+            name: field.name,
+            description: field.description,
+            cost: field.cost_per_minute,
+            capacity: field.capacity,
+            slot_duration: field.slot_duration,
+            sports: field.sports?.map(sport => ({
+                id: sport.id,
+                name: sport.name
+            })) || []
+        })) || [];
     }
 
     public async createField(field: IField): Promise<void> {
@@ -62,31 +77,37 @@ class FieldService{
         return field;
     }
 
-    public async updateField(fieldId: string, clubId: string, fieldData: IFieldUpdate): Promise<void> {
+    public async updateField(fieldId: string, clubId: string, fieldData: IFieldUpdate): Promise<Field | null> {
         if (fieldData.slot_duration) {
             this.validateSlotDuration(fieldData.slot_duration);
         }
-        
+
         const field = await FieldService.checkOwnership(fieldId, clubId);
+        if (!field) return null;
+
         const transaction = await Field.sequelize!.transaction();
-        
+
         try {
             await FieldPersistence.updateField(field, fieldData);
-            
-            if (fieldData.sportIds) {
+
+            if (fieldData.sportIds && fieldData.sportIds.length > 0) {
                 await FieldPersistence.updateFieldSports(field.id, fieldData.sportIds, transaction);
             }
-            
+
             await transaction.commit();
+            return field;
         } catch (error) {
             await transaction.rollback();
             throw error;
         }
     }
 
-    public async removeField(fieldId: string, clubId: string): Promise<void> {
+    public async removeField(fieldId: string, clubId: string): Promise<boolean> {
         const field = await FieldService.checkOwnership(fieldId, clubId);
+        if (!field) return false; // Si la cancha no existe, devolvemos false
+
         await FieldPersistence.removeField(field);
+        return true; // Devolvemos true si se eliminó correctamente
     }
 
     public async getFieldById(fieldId: string): Promise<Field> {

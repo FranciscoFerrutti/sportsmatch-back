@@ -17,8 +17,9 @@ export default class FieldsRoutes{
 
         this.router.post('/', clubAuthMiddleware, this.controller.postField)
         this.router.get('/:clubId', this.controller.getFields)
-        this.router.put('/:fieldId', clubAuthMiddleware,this.controller.updateField)
-        this.router.delete('/:fieldId', clubAuthMiddleware, this.controller.deleteField)
+        this.router.get("/:clubId/:fieldId", this.controller.getFieldById);
+        this.router.put('/:clubId/:fieldId', clubAuthMiddleware, this.controller.updateField);
+        this.router.delete('/:clubId/:fieldId', clubAuthMiddleware, this.controller.deleteField)
 
         this.router.use('/:fieldId/availability', new TimeSlotsRoutes().router);
 

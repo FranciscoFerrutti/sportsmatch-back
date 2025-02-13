@@ -8,7 +8,16 @@ import ClubLocation from "../models/ClubLocation.model";
 
 class FieldPersistence{
     static async getClubFields(clubId: string): Promise<Field[] | null>{
-        return await Field.findAll({where: {club_id: clubId}})
+        return await Field.findAll({
+            where: { club_id: clubId },
+            include: [
+                {
+                    model: Sport,
+                    through: { attributes: [] },
+                    attributes: ['id', 'name']
+                }
+            ]
+        });
     }
 
     static async createField(field: IField): Promise<Field>{

@@ -7,3 +7,6 @@ pnpm-lock.yaml
 .vscode/settings.json
 package-lock.json
 coverage
+src/typings/.DS_Store
+
+.DS_Store

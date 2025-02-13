@@ -81,6 +81,7 @@ class FieldsController{
         .build()
     )
     @validateParams(Joi.object({
+        clubId: Joi.number().min(1).required(),
         fieldId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
@@ -88,16 +89,49 @@ class FieldsController{
         cost: Joi.number().optional(),
         description: Joi.string().min(5).max(250).optional(),
         capacity: Joi.number().optional(),
-        slot_duration: Joi.number().optional()
+        slot_duration: Joi.number().optional(),
+        sports: Joi.array().items(Joi.number().min(1)).optional()
     }))
-    @HttpRequestInfo("/fields/:fieldId", HTTP_METHODS.PUT)
+    @HttpRequestInfo("/fields/:clubId/:fieldId", HTTP_METHODS.PUT)
     public async updateField(req: Request, res: Response, next: NextFunction) {
-        const { name, cost, description, capacity, slot_duration } = req.body;
-        const ownerId = req.user.id;
-        const fieldId = req.params.fieldId;
+        const { name, cost, description, capacity, slot_duration, sports } = req.body;
+        const { clubId, fieldId } = req.params;
 
         try {
-            await this.fieldService.updateField(fieldId, ownerId,{ name, cost, description, capacity, slot_duration });
+            await this.fieldService.updateField(fieldId, clubId, {
+                name,
+                cost,
+                description,
+                capacity,
+                slot_duration,
+                sportIds: sports
+            });
+
+            res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+            }
+        })
+        .build()
+    )
+    @validateParams(Joi.object({
+        clubId: Joi.number().min(1).required(),
+        fieldId: Joi.number().min(1).required()
+    }))
+    @HttpRequestInfo("/fields/:clubId/:fieldId", HTTP_METHODS.DELETE)
+    public async deleteField(req: Request, res: Response, next: NextFunction) {
+        const { clubId, fieldId } = req.params;
+
+        try {
+            await this.fieldService.removeField(fieldId, clubId);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -113,16 +147,16 @@ class FieldsController{
         .build()
     )
     @validateParams(Joi.object({
+        clubId: Joi.number().min(1).required(),
         fieldId: Joi.number().min(1).required()
     }))
-    @HttpRequestInfo("/fields/:fieldId", HTTP_METHODS.DELETE)
-    public async deleteField(req: Request, res: Response, next: NextFunction) {
-        const ownerId = req.user.id;
-        const fieldId = req.params.fieldId
+    @HttpRequestInfo("/fields/:clubId/:fieldId", HTTP_METHODS.GET)
+    public async getFieldById(req: Request, res: Response, next: NextFunction) {
+        const { clubId, fieldId } = req.params;
 
         try {
-            await this.fieldService.removeField(fieldId, ownerId);
-            res.status(HTTP_STATUS.OK).send();
+            const field = await this.fieldService.getFieldById(fieldId);
+            res.status(HTTP_STATUS.OK).send(field);
         } catch (err) {
             next(err);
         }
