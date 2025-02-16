@@ -6,7 +6,7 @@ dotenv.config();
 
 let sequelize: Sequelize;
 
-if(process.env.IS_LOCAL){
+if(process.env.IS_LOCAL == "true"){
     sequelize = new Sequelize({
         database: process.env.DB_NAME!,
         dialect: 'postgres',
