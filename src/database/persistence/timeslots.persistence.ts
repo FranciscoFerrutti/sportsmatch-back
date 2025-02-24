@@ -82,28 +82,34 @@ export default class TimeSlotPersistence {
         });
     }
 
+
     async getFieldTimeSlots(
-        fieldId: number, 
-        date?: string, 
+        fieldId: number,
+        startDate?: string,
+        endDate?: string,
         slotStatus?: SlotStatus,
         startTime?: string,
         endTime?: string
     ) {
         const where: any = { field_id: fieldId };
-        
-        if (date) {
-            where.availability_date = date;
+
+        if (startDate && endDate) {
+            where.availability_date = { [Op.between]: [startDate, endDate] };
+        } else if (startDate) {
+            where.availability_date = startDate;
+        } else if (endDate) {
+            where.availability_date = endDate;
         }
-        
+
         if (slotStatus) {
             where.slotStatus = slotStatus;
         }
-        
+
         if (startTime) {
             where.start_time = where.start_time || {};
             where.start_time[Op.gte] = startTime;
         }
-        
+
         if (endTime) {
             where.end_time = where.end_time || {};
             where.end_time[Op.lte] = endTime;
@@ -118,21 +124,22 @@ export default class TimeSlotPersistence {
         });
     }
 
+
     async getAvailableTimeSlots(fieldId: number, startDate: string, endDate: string) {
-        return await TimeSlot.findAll({
-            where: {
-                field_id: fieldId,
-                availability_date: {
-                    [Op.between]: [startDate, endDate]
+            return await TimeSlot.findAll({
+                where: {
+                    field_id: fieldId,
+                    availability_date: {
+                        [Op.between]: [startDate, endDate]
+                    },
+                    slotStatus: SlotStatus.AVAILABLE
                 },
-                slotStatus: SlotStatus.AVAILABLE
-            },
-            order: [
-                ['availability_date', 'ASC'],
-                ['start_time', 'ASC']
-            ]
-        });
-    }
+                order: [
+                    ['availability_date', 'ASC'],
+                    ['start_time', 'ASC']
+                ]
+            });
+        }
 
     async deleteTimeSlot(fieldId: number, slotId: number) {
         return await TimeSlot.destroy({

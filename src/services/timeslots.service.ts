@@ -79,15 +79,17 @@ export default class TimeSlotsService {
     }
 
     async getFieldTimeSlots(
-        fieldId: number, 
-        date?: string, 
+        fieldId: number,
+        startDate?: string,
+        endDate?: string,
         slotStatus?: SlotStatus,
         startTime?: string,
         endTime?: string
     ) {
         return await this.persistence.getFieldTimeSlots(
-            fieldId, 
-            date, 
+            fieldId,
+            startDate,
+            endDate,
             slotStatus,
             startTime,
             endTime

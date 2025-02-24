@@ -94,7 +94,8 @@ class TimeSlotsController {
         fieldId: Joi.number().min(1).required()
     }))
     @validateQuery(Joi.object({
-        availabilityDate: Joi.string().isoDate().optional(),
+        startDate: Joi.string().isoDate().optional(),
+        endDate: Joi.string().isoDate().optional(),
         slotStatus: Joi.string().valid('available', 'booked', 'maintenance').optional(),
         startTime: Joi.string().regex(TIME_REGEX).optional(),
         endTime: Joi.string().regex(TIME_REGEX).optional()
@@ -103,20 +104,25 @@ class TimeSlotsController {
     public async getFieldTimeSlots(req: Request, res: Response, next: NextFunction) {
         try {
             const fieldId = parseInt(req.params.fieldId);
-            const { availabilityDate, slotStatus, startTime, endTime } = req.query;
+            const { startDate, endDate, slotStatus, startTime, endTime } = req.query;
+
+            console.log(`📌 Buscando timeSlots para fieldId: ${fieldId}, startDate: ${startDate}, endDate: ${endDate}`);
 
             const slots = await this.service.getFieldTimeSlots(
-                fieldId, 
-                availabilityDate as string,
-                slotStatus as SlotStatus,
-                startTime as string,
-                endTime as string
+                fieldId,
+                startDate as string | undefined,
+                endDate as string | undefined,
+                slotStatus as SlotStatus | undefined,
+                startTime as string | undefined,
+                endTime as string | undefined
             );
+
             res.status(HTTP_STATUS.OK).json(slots);
         } catch (error) {
             next(error);
         }
     }
+
 
     @document(SwaggerEndpointBuilder.create()
         .responses({

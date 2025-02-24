@@ -18,15 +18,15 @@ class FieldService{
     }
 
     private validateSlotDuration(duration: number) {
-        const validDurations = [15, 30, 60, 90, 120];
-        if (!validDurations.includes(duration)) {
+        if (duration <= 0 || duration > 1440 || duration % 30 !== 0) {
             throw new GenericException({
-                message: "Invalid slot duration. Must be one of: 15, 30, 60, 90, 120 minutes",
+                message: "Invalid slot duration. Must be a multiple of 30 minutes and between 30 and 1440 minutes (24 hours).",
                 status: HTTP_STATUS.BAD_REQUEST,
                 internalStatus: "INVALID_SLOT_DURATION"
             });
         }
     }
+
 
     public async getFields(clubId: string): Promise<any> {
         const fields = await FieldPersistence.getClubFields(clubId);
