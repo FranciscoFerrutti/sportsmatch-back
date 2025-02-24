@@ -47,7 +47,7 @@ class FieldService{
         })) || [];
     }
 
-    public async createField(field: IField): Promise<void> {
+    public async createField(field: IField): Promise<Field> {
         this.validateSlotDuration(field.slot_duration);
         const transaction = await Field.sequelize!.transaction();
         
@@ -58,6 +58,8 @@ class FieldService{
             await FieldPersistence.associateFieldSports(createdField.id, field.sportIds, transaction);
             
             await transaction.commit();
+
+            return createdField;
         } catch (error) {
             await transaction.rollback();
             throw error;

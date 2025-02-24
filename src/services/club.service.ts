@@ -38,12 +38,18 @@ class ClubService {
 
 
     public async getClubById(id: string): Promise<any> {
-        // Promise<IClubDto>
-        // const user = await ClubPersistence.getClubById(id);
-        // if (!user) throw new NotFoundException("Club");
-        //
-        // return ClubDtoMapper.toClubDto(user);
+        console.log("🔍 Buscando club con ID:", id);
+
+        const club = await ClubPersistence.getClubById(id);
+
+        if (!club) {
+            console.warn("⚠️ Club no encontrado con ID:", id);
+            throw new Error("Club no encontrado"); // Manejo de error
+        }
+
+        return club;
     }
+
 
 
     public async updateClub(userId: string, phoneNumber?: string, location?: string): Promise<void> {

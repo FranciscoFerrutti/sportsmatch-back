@@ -39,6 +39,9 @@ class TimeSlotsController {
             }
         })
         .build())
+        @validateParams(Joi.object({
+            fieldId: Joi.number().min(1).required()
+        }))
         @validateBody(Joi.object({
             availabilityDate: Joi.string().isoDate().required(),
             startTime: Joi.string().regex(TIME_REGEX).required(),

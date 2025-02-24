@@ -29,31 +29,20 @@ class ClubsController{
     @HttpRequestInfo("/clubs", HTTP_METHODS.GET)
     public async getClubs(req: Request, res: Response, next: NextFunction) {
         try {
-            const users = await this.clubService.getClubs();
-            res.status(HTTP_STATUS.OK).send(users);
-        } catch (err) {
-            next(err);
-        }
-    }
+            const { clubId, location, radius } = req.query;
 
-    @document(SwaggerEndpointBuilder.create()
-        .responses({
-            "200": {
-                description: "OK",
-                schema: {
-                    type: "object",
-                }
+            if (clubId) {
+                const club = await this.clubService.getClubById(clubId as string);
+                return res.status(HTTP_STATUS.OK).send(club);
             }
-        })
-        .build())
-    @validateParams(Joi.object({
-        clubId: Joi.number().optional(),
-    }))
-    @HttpRequestInfo("/clubs/:clubId", HTTP_METHODS.GET)
-    public async getClub(req: Request, res: Response, next: NextFunction) {
-        try {
-            const user = await this.clubService.getClubById(req.params.clubId as string);
-            res.status(HTTP_STATUS.OK).send(user);
+
+            if (location) {
+                const clubs = await this.clubService.getNearClubs(location as string, radius ? Number(radius) : undefined);
+                return res.status(HTTP_STATUS.OK).send(clubs);
+            }
+
+            const clubs = await this.clubService.getClubs();
+            res.status(HTTP_STATUS.OK).send(clubs);
         } catch (err) {
             next(err);
         }
@@ -116,32 +105,6 @@ class ClubsController{
             if (userIdPath !== userId) throw new Error("User can't update another user");
             await this.clubService.updateLocation(userId, latitude, longitude, address);
             res.status(HTTP_STATUS.OK).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    @document(SwaggerEndpointBuilder.create()
-        .responses({
-            "200": {
-                description: "OK",
-                schema: {
-                    type: "object",
-                }
-            }
-        })
-        .build())
-    @validateParams(Joi.object({
-        location: Joi.string().valid(...Object.keys(LOCATION_COORDINATES)),
-        radius: Joi.number().optional(),
-    }))
-    @HttpRequestInfo("/clubs/:location", HTTP_METHODS.GET)
-    public async getNearClubs(req: Request, res: Response, next: NextFunction) {
-        const location = req.params.location;
-        const radius = Number(req.query.radius);
-        try {
-            const clubs = await this.clubService.getNearClubs(location, radius);
-            res.status(HTTP_STATUS.OK).send(clubs);
         } catch (err) {
             next(err);
         }
