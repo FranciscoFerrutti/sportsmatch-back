@@ -201,4 +201,15 @@ export default class ReservationPersistence {
             }]
         });
     }
+
+    async checkAndLockSlots(slotIds: number[], transaction: Transaction): Promise<TimeSlot[]> {
+        return await TimeSlot.findAll({
+            where: { 
+                id: slotIds,
+                slotStatus: SlotStatus.AVAILABLE 
+            },
+            lock: transaction.LOCK.UPDATE,
+            transaction
+        });
+    }
 } 

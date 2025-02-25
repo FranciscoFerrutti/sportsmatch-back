@@ -113,8 +113,8 @@ class ReservationsService {
             // Validate event ownership
             await this.getAndValidateEventOwnership(eventId, userId);
 
-            // Validate slots belong to the field and are available
-            const slots = await this.timeSlotsService.getSlotsByIds(slotIds);
+            // Get and lock the slots in a single operation
+            const slots = await this.reservationPersistence.checkAndLockSlots(slotIds, transaction);
             this.validateSlots(slots, fieldId);
 
             // Calculate total cost
@@ -210,7 +210,6 @@ class ReservationsService {
     }
 
     private validateSlots(slots: TimeSlot[], fieldId: number): void {
-        // Check if all slots exist and belong to the same field
         if (slots.length === 0 || slots.some(slot => slot.field_id !== fieldId)) {
             throw new GenericException({
                 message: "Invalid time slots",
@@ -219,16 +218,6 @@ class ReservationsService {
             });
         }
 
-        // Check if all slots are available
-        if (slots.some(slot => slot.slotStatus !== SlotStatus.AVAILABLE)) {
-            throw new GenericException({
-                message: "Some slots are not available",
-                status: HTTP_STATUS.BAD_REQUEST,
-                internalStatus: "UNAVAILABLE_SLOTS"
-            });
-        }
-
-        // Check if slots are consecutive
         for (let i = 1; i < slots.length; i++) {
             const prevSlot = slots[i - 1];
             const currentSlot = slots[i];
