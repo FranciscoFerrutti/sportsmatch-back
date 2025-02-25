@@ -1,4 +1,5 @@
 import { IEvent } from "../interfaces/event.interface";
+import Event from "../database/models/Event.model"
 import { Page } from "../interfaces/api.interface";
 import EventPersistence from "../database/persistence/event.persistence";
 import NotFoundException from "../exceptions/notFound.exception";
@@ -42,7 +43,7 @@ class EventsService {
         };
     }
 
-    public async createEvent(event: IEvent): Promise<void> {
+    public async createEvent(event: IEvent): Promise<Event> {
         if (event.organizerType === OrganizerType.USER) {
             const user = await UserPersistence.getUserById(event.ownerId.toString());
             if (!user) {
@@ -56,7 +57,7 @@ class EventsService {
         } else {
             throw new Error('Invalid organizer type');
         }
-        await EventPersistence.createEvent(event);
+        return await EventPersistence.createEvent(event);
     }
 }
 

@@ -27,13 +27,12 @@ class FieldsController{
         .build())
         @HttpRequestInfo("/fields", HTTP_METHODS.GET)
         public async getFields(req: Request, res: Response, next: NextFunction) {
-            const clubId : string = req.query.clubId as string;
             try {
-                if (!clubId) {
-                    return res.status(400).json({ error: "clubId es requerido" });
-                }
+                const clubId: string | undefined = req.query.clubId as string | undefined;
 
-                const fields = await this.fieldService.getFields(clubId);
+                const fields = clubId
+                    ? await this.fieldService.getFields(clubId)
+                    : await this.fieldService.getAllFields();
                 res.status(HTTP_STATUS.OK).send(fields);
             } catch (err) {
                 next(err);
