@@ -9,7 +9,7 @@ import User from "../database/models/User.model";
 import UserLocationPersistence from "../database/persistence/userLocation.persistence";
 import ClubLocationPersistence from "../database/persistence/clubLocation.persistence";
 
-const default_radius = 20;
+const default_radius = 5;
 
 class ClubService {
     private static instance: ClubService;

@@ -304,7 +304,7 @@ class ReservationsService {
     }
 
     public async findReservationWithOwner(reservationId: number): Promise<Reservation> {
-        const reservation = await this.reservationPersistence.findReservationWithOwner(reservationId);
+        const reservation = await this.reservationPersistence.findReservationWithOwnerDetails(reservationId);
         if (!reservation) {
             throw new NotFoundException("Reservation");
         }

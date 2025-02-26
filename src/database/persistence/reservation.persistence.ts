@@ -198,7 +198,7 @@ export default class ReservationPersistence {
             where: { id: reservationId },
             include: [{
                 model: Event,
-                attributes: ['id', 'ownerId', 'organizerType']
+                attributes: ['id', 'ownerId', 'organizerType', 'schedule']
             }]
         });
     }
@@ -209,7 +209,7 @@ export default class ReservationPersistence {
             include: [
                 {
                     model: Event,
-                    attributes: ['id', 'ownerId', 'organizerType'],
+                    attributes: ['id', 'ownerId', 'organizerType', 'schedule'],
                     include: [{
                         model: User,
                         as: 'userOwner',
