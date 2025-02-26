@@ -87,7 +87,7 @@ class ReservationsService {
                             slotIds: slot.slotIds,
                             startTime: slot.startTime,
                             endTime: slot.endTime,
-                            totalCost: slot.slotIds.length * field.cost_per_minute * field.slot_duration
+                            totalCost: slot.slotIds.length * field.cost_per_slot
                         }))
                     });
                 }
@@ -119,7 +119,7 @@ class ReservationsService {
 
             // Calculate total cost
             const field = await this.fieldsService.getFieldById(fieldId.toString());
-            const totalCost = slots.length * field.cost_per_minute * field.slot_duration;
+            const totalCost = slots.length * field.cost_per_slot;
 
             // Create reservation
             const reservation = await this.reservationPersistence.createReservation(

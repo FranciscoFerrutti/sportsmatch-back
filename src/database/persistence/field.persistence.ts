@@ -22,7 +22,7 @@ class FieldPersistence{
 
     static async getAllFields(): Promise<Field[] | null> {
         return await Field.findAll({
-            attributes: ['id', 'name', 'description', 'cost_per_minute', 'capacity', 'slot_duration', 'club_id'], // Agregar club_id aquí
+            attributes: ['id', 'name', 'description', 'cost_per_slot', 'capacity', 'slot_duration', 'club_id'], // Agregar club_id aquí
             include: [
                 {
                     model: Sport,

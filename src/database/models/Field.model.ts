@@ -25,7 +25,7 @@ export default class Field extends Model {
     description?: string;
 
     @Column(DataType.FLOAT)
-    cost_per_minute!: number;
+    cost_per_slot!: number;
 
     @Column(DataType.INTEGER)
     capacity!: number;

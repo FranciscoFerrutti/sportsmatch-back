@@ -251,7 +251,7 @@ export default class TimeSlotPersistence {
             },
             include: [{
                 model: Field,
-                attributes: ['id', 'slot_duration', 'cost_per_minute']
+                attributes: ['id', 'slot_duration', 'cost_per_slot']
             }]
         });
     }

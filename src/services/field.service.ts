@@ -37,7 +37,7 @@ class FieldService{
             id: field.id,
             name: field.name,
             description: field.description,
-            cost: field.cost_per_minute,
+            cost: field.cost_per_slot,
             capacity: field.capacity,
             slot_duration: field.slot_duration,
             sports: field.sports?.map(sport => ({
@@ -55,7 +55,7 @@ class FieldService{
             id: field.id,
             name: field.name,
             description: field.description,
-            cost: field.cost_per_minute,
+            cost: field.cost_per_slot,
             capacity: field.capacity,
             slot_duration: field.slot_duration,
             sports: field.sports?.map(sport => ({
