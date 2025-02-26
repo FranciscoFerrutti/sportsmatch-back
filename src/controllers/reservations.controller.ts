@@ -280,6 +280,66 @@ class ReservationsController {
             next(error);
         }
     }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                    properties: {
+                        id: { type: "number" },
+                        eventId: { type: "number" },
+                        fieldId: { type: "number" },
+                        status: { type: "string" },
+                        cost: { type: "number" },
+                        timeSlots: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                properties: {
+                                    id: { type: "number" },
+                                    startTime: { type: "string" },
+                                    endTime: { type: "string" },
+                                    date: { type: "string" }
+                                }
+                            }
+                        },
+                        field: {
+                            type: "object",
+                            properties: {
+                                name: { type: "string" },
+                                clubId: { type: "number" },
+                                clubName: { type: "string" }
+                            }
+                        },
+                        owner: {
+                            type: "object",
+                            properties: {
+                                id: { type: "number" },
+                                name: { type: "string" },
+                                phone: { type: "string" }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        .build())
+    @validateParams(Joi.object({
+        reservationId: Joi.number().required()
+    }))
+    @HttpRequestInfo("reservations/:reservationId", HTTP_METHODS.GET)
+    public async getReservationWithOwner(req: Request, res: Response, next: NextFunction) {
+        try {
+            const reservationId = parseInt(req.params.reservationId);
+            const reservation = await this.service.findReservationWithOwner(reservationId);
+            res.status(HTTP_STATUS.OK).json(reservation);
+        } catch (error) {
+            next(error);
+        }
+    }
+
 }
 
 export default ReservationsController; 

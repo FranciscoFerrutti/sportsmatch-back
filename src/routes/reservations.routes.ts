@@ -27,6 +27,8 @@ export default class ReservationsRoutes {
         this.router.get('/', clubAuthMiddleware, this.controller.getReservationsByClub)
 
         this.router.delete('/:reservationId', authMiddleware, this.controller.cancelReservation);
+
+        this.router.get('/:reservationId', clubAuthMiddleware, this.controller.getReservationWithOwner);
     }
 
     //TODO: ONCE COMPLETED THE RESERVATION UPDATE EVENTS DETAILS
