@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { urlencoded } from 'body-parser';
 import userAuthMiddleware from "../middlewares/jwt.middleware";
+import clubAuthMiddleware from "../middlewares/clubauth.middleware";
 import PaymentController from "../controllers/payment.controller";
 
 export default class PaymentRoutes{
@@ -18,5 +19,6 @@ export default class PaymentRoutes{
         // TODO: ADD AUTH TO POST
         this.router.post('/:reservationId/process_payment', this.controller.addPayment);
         this.router.get('/:reservationId', userAuthMiddleware, this.controller.getPaymentsByReservationId);
+        this.router.get('/club/:reservationId/status', clubAuthMiddleware, this.controller.getPaymentStatusForClub);
     }
 }
