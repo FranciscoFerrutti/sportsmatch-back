@@ -297,4 +297,26 @@ export default class TimeSlotPersistence {
             order: [['start_time', 'ASC']]
         });
     }
+
+    async findTimeSlotsByReservation(reservationId: number): Promise<TimeSlot[]> {
+        return await TimeSlot.findAll({
+            where: { reservationId },
+            include: [{
+                model: Field,
+                attributes: ['slot_duration']
+            }],
+            order: [['start_time', 'ASC']]
+        });
+    }
+
+    async checkAndLockSlots(slotIds: number[], transaction: Transaction): Promise<TimeSlot[]> {
+        return await TimeSlot.findAll({
+            where: { 
+                id: slotIds,
+                slotStatus: SlotStatus.AVAILABLE 
+            },
+            lock: transaction.LOCK.UPDATE,
+            transaction
+        });
+    }
 } 

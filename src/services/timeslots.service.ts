@@ -129,7 +129,16 @@ export default class TimeSlotsService {
     }
 
     public async getSlotsByIds(slotIds: number[]): Promise<TimeSlot[]> {
-        return await this.persistence.getSlotsByIds(slotIds);}
+        return await this.persistence.getSlotsByIds(slotIds);
+    }
+
+    public async findTimeSlotsByReservation(reservationId: number): Promise<TimeSlot[]> {
+        return await this.persistence.findTimeSlotsByReservation(reservationId);
+    }
+
+    public async checkAndLockSlots(slotIds: number[], transaction: Transaction): Promise<TimeSlot[]> {
+        return await this.persistence.checkAndLockSlots(slotIds, transaction);
+    }
 
     public async releaseSlots(slotIds: number[], transaction: Transaction): Promise<void> {
         await this.persistence.releaseSlots(slotIds, transaction);

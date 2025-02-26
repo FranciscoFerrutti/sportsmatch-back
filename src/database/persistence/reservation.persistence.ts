@@ -7,6 +7,7 @@ import { ReservationStatus } from "../../constants/reservation.constants";
 import { SlotStatus } from "../../constants/slots.constants";
 import Event from "../models/Event.model";
 import User from "../models/User.model";
+import ClubLocation from "../models/ClubLocation.model";
 
 export default class ReservationPersistence {
     async startTransaction(): Promise<Transaction> {
@@ -227,14 +228,20 @@ export default class ReservationPersistence {
         });
     }
 
-    async checkAndLockSlots(slotIds: number[], transaction: Transaction): Promise<TimeSlot[]> {
-        return await TimeSlot.findAll({
-            where: { 
-                id: slotIds,
-                slotStatus: SlotStatus.AVAILABLE 
-            },
-            lock: transaction.LOCK.UPDATE,
-            transaction
+    async findClubLocationByReservation(reservationId: number): Promise<ClubLocation | null> {
+        const reservation = await Reservation.findOne({
+            where: { id: reservationId },
+            include: [{
+                model: Field,
+                include: [{
+                    model: Club,
+                    include: [{
+                        model: ClubLocation
+                    }]
+                }]
+            }]
         });
+
+        return reservation?.field?.club?.location || null;
     }
 } 

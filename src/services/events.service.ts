@@ -59,6 +59,14 @@ class EventsService {
         }
         return await EventPersistence.createEvent(event);
     }
+
+    public async updateEventById(eventId: string, updateData: {
+        location?: string;
+        schedule?: Date;
+        duration?: number;
+    }): Promise<Event> {
+        return await EventPersistence.updateEvent(eventId, updateData);
+    }
 }
 
 export default EventsService;

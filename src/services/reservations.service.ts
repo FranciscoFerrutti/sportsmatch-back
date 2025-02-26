@@ -114,7 +114,7 @@ class ReservationsService {
             await this.getAndValidateEventOwnership(eventId, userId);
 
             // Get and lock the slots in a single operation
-            const slots = await this.reservationPersistence.checkAndLockSlots(slotIds, transaction);
+            const slots = await this.timeSlotsService.checkAndLockSlots(slotIds, transaction);
             this.validateSlots(slots, fieldId);
 
             // Calculate total cost
@@ -170,7 +170,37 @@ class ReservationsService {
             status
         );
 
-        //TODO: REQUEST PAYMENT
+        // If the reservation is confirmed, update the event details
+        if (status === ReservationStatus.CONFIRMED) {
+            // Get club location
+            const clubLocation = await this.reservationPersistence.findClubLocationByReservation(reservationId);
+            if (!clubLocation) {
+                throw new NotFoundException("Club location");
+            }
+
+            // Get time slots for the reservation
+            const timeSlots = await this.timeSlotsService.findTimeSlotsByReservation(reservationId);
+            if (!timeSlots || timeSlots.length === 0) {
+                throw new NotFoundException("Time slots");
+            }
+
+            const firstSlot = timeSlots[0];
+
+            // Calculate total duration based on number of slots and slot duration
+            const totalDuration = timeSlots.length * firstSlot.field.slot_duration;
+
+            // Combine availability_date and start_time for the correct schedule
+            const scheduleDate = new Date(firstSlot.availability_date);
+            const [hours, minutes] = firstSlot.start_time.toString().split(':');
+            scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+            // Update event with new details
+            await this.eventsService.updateEventById(updatedReservation.eventId.toString(), {
+                location: clubLocation.address,
+                schedule: scheduleDate,
+                duration: totalDuration
+            });
+        }
 
         return this.mapToReservationDetail(updatedReservation);
     }

@@ -6,6 +6,7 @@ import User from "../models/User.model";
 import { QueryBuilder } from "../utils/postgres.database";
 import Club from "../models/Club.model";
 import {OrganizerType} from "../../constants/event.constants";
+import NotFoundException from "../../exceptions/notFound.exception";
 
 class EventPersistence {
     static async createEvent(event: IEvent): Promise<Event> {
@@ -208,6 +209,20 @@ class EventPersistence {
 
     static async getEventById(id: string): Promise<Event | null > {
         return await Event.findOne({ where: { id: id }});
+    }
+
+    static async updateEvent(eventId: string, updateData: {
+        location?: string;
+        schedule?: Date;
+        duration?: number;
+    }): Promise<Event> {
+        const event = await Event.findByPk(eventId);
+        if (!event) {
+            throw new NotFoundException("Event");
+        }
+
+        await event.update(updateData);
+        return event;
     }
 
     static async getEventByIdWithParticipants(id: string): Promise<Event | null > {
