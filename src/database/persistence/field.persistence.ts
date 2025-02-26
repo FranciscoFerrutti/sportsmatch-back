@@ -36,7 +36,7 @@ class FieldPersistence{
     static async createField(field: IField): Promise<Field>{
         return await Field.create({
             name: field.name,
-            cost_per_minute: field.cost,
+            cost_per_slot: field.cost,
             description: field.description,
             capacity: field.capacity,
             club_id: field.ownerId,
