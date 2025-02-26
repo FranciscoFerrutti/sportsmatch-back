@@ -47,6 +47,25 @@ class FieldService{
         })) || [];
     }
 
+    public async getAllFields(): Promise<any> {
+        const fields = await FieldPersistence.getAllFields(); // Nuevo método en el modelo
+        console.log("📢 Datos obtenidos de la BD en getAllFields:", JSON.stringify(fields, null, 2));
+
+        return fields?.map(field => ({
+            id: field.id,
+            name: field.name,
+            description: field.description,
+            cost: field.cost_per_minute,
+            capacity: field.capacity,
+            slot_duration: field.slot_duration,
+            sports: field.sports?.map(sport => ({
+                id: sport.id,
+                name: sport.name
+            })) || [],
+            club_id: field.club_id
+        })) || [];
+    }
+
     public async createField(field: IField): Promise<Field> {
         this.validateSlotDuration(field.slot_duration);
         const transaction = await Field.sequelize!.transaction();

@@ -116,7 +116,7 @@ class EventsController {
         const ownerId = req.user.id;
         const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
         try {
-            await this.eventsService.createEvent({
+            const createdEvent = await this.eventsService.createEvent({
                 ownerId, 
                 organizerType,
                 sportId, 
@@ -127,7 +127,8 @@ class EventsController {
                 duration, 
                 remaining
             });
-            res.status(HTTP_STATUS.CREATED).send();
+
+            res.status(HTTP_STATUS.CREATED).json({ eventId: createdEvent.id });
         } catch (err) {
             next(err);
         }
