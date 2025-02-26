@@ -310,6 +310,14 @@ class ReservationsService {
         }
         return reservation;
     }
+
+    public async findReservationWithOwnerDetails(reservationId: number): Promise<Reservation> {
+        const reservation = await this.reservationPersistence.findReservationWithOwnerDetails(reservationId);
+        if (!reservation) {
+            throw new NotFoundException("Reservation");
+        }
+        return reservation;
+    }
 }
 
 export default ReservationsService; 

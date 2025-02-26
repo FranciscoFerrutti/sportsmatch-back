@@ -3,6 +3,7 @@ import PaymentPersistence from '../database/persistence/payment.persistence';
 import ReservationsService from './reservations.service';
 import { PaymentStatus } from '../constants/payment.constants';
 import GenericException from '../exceptions/generic.exception';
+import NotFoundException from '../exceptions/notFound.exception';
 import { HTTP_STATUS } from '../constants/http.constants';
 import { OrganizerType } from "../constants/event.constants";
 
@@ -124,5 +125,42 @@ export class PaymentService {
         }
         
         return await this.paymentPersistence.findByReservationId(reservationId);
+    }
+
+    async getPaymentStatusForClub(reservationId: number, clubId: number) {
+        const reservation = await this.reservationService.findReservationWithOwnerDetails(reservationId);
+        
+        if (!reservation) {
+            throw new NotFoundException("Reservation");
+        }
+        
+        if (reservation.field?.club?.id !== clubId) {
+            throw new GenericException({
+                status: HTTP_STATUS.FORBIDDEN,
+                message: "Club is not authorized to view this payment status",
+                internalStatus: "UNAUTHORIZED_ACCESS"
+            });
+        }
+
+        const payment = await this.paymentPersistence.findApprovedPaymentByReservationId(reservationId);
+
+        if (!reservation.event.userOwner) {
+            throw new GenericException({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: "User owner information not found",
+                internalStatus: "USER_OWNER_NOT_FOUND"
+            });
+        }
+
+        return {
+            reservationId: reservation.id,
+            isPaid: !!payment,
+            paymentDate: payment?.transactionDate || null,
+            amount: payment?.transactionAmount || reservation.getCost(),
+            owner: {
+                name: `${reservation.event.userOwner.firstname} ${reservation.event.userOwner.lastname}`,
+                phoneNumber: reservation.event.userOwner.phone_number
+            }
+        };
     }
 } 

@@ -6,6 +6,7 @@ import Club from "../models/Club.model";
 import { ReservationStatus } from "../../constants/reservation.constants";
 import { SlotStatus } from "../../constants/slots.constants";
 import Event from "../models/Event.model";
+import User from "../models/User.model";
 
 export default class ReservationPersistence {
     async startTransaction(): Promise<Transaction> {
@@ -199,6 +200,30 @@ export default class ReservationPersistence {
                 model: Event,
                 attributes: ['id', 'ownerId', 'organizerType']
             }]
+        });
+    }
+
+    async findReservationWithOwnerDetails(reservationId: number): Promise<Reservation | null> {
+        return await Reservation.findOne({
+            where: { id: reservationId },
+            include: [
+                {
+                    model: Event,
+                    attributes: ['id', 'ownerId', 'organizerType'],
+                    include: [{
+                        model: User,
+                        as: 'userOwner',
+                        attributes: ['firstname', 'lastname', 'phone_number']
+                    }]
+                },
+                {
+                    model: Field,
+                    include: [{
+                        model: Club,
+                        attributes: ['id']
+                    }]
+                }
+            ]
         });
     }
 

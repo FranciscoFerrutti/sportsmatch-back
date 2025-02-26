@@ -63,5 +63,29 @@ export default class PaymentController{
             next(error);
         }
     }
+
+    @document(SwaggerEndpointBuilder.create()
+        .description('Get payment status and owner info for clubs')
+        .responses({
+            "200": { description: 'Payment status with owner info' },
+            "403": { description: 'Unauthorized access' },
+            "404": { description: 'Reservation not found' }
+        })
+        .build()
+    )
+    @validateParams(Joi.object({
+        reservationId: Joi.number().required()
+    }))
+    @HttpRequestInfo("/payments/club/:reservationId/status", HTTP_METHODS.GET)
+    public async getPaymentStatusForClub(req: Request, res: Response, next: NextFunction) {
+        try {
+            const clubId = parseInt(req.user.id);
+            const reservationId = parseInt(req.params.reservationId);
+            const paymentStatus = await this.paymentService.getPaymentStatusForClub(reservationId, clubId);
+            return res.json(paymentStatus);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
