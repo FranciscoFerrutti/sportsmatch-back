@@ -24,7 +24,7 @@ class AuthService {
 
     private constructor() {
         this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '7600000';
-        this.jwtKey = process.env.JWT_KEY ?? 'kvajfvhjabdsjhvajdhvjsvbsmn';
+        this.jwtKey = process.env.JWT_KEY ?? "kvajfvhjabdsjhvajdhvjsvbsmn";
         this.userService = UsersService.getInstance();
     }
 
@@ -101,10 +101,19 @@ class AuthService {
     }
 
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
-        const payload = {id: userId, email: email, type: 'user'};
-        const key = this.jwtKey;
-        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
-    }
+        const payload = { id: userId, email: email, type: "user" };
+
+        // Verifica que la clave no sea nula o vacía
+        if (!this.jwtKey || typeof this.jwtKey !== "string" || this.jwtKey.trim() === "") {
+            throw new Error("JWT_KEY is missing or invalid");
+        }
+
+        return jwt.sign(payload, this.jwtKey, {
+            expiresIn: expiryTime, // Usa expiresIn correctamente
+            issuer: "byPS", // Asegúrate de que issuer está en SignOptions
+        });
+    };
+
 }
 
 export const pbkdf2 = Bluebird.promisify(Crypto.pbkdf2);
