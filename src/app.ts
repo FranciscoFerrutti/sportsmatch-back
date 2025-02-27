@@ -43,8 +43,7 @@ class App {
                 origin: "*",
                 methods: ["GET", "POST", "PUT", "DELETE"],
                 allowedHeaders: ["Content-Type", "Authorization"],
-                exposedHeaders: ['c-api-key'],
-                credentials: true
+                exposedHeaders: ['c-api-key']
             }));
         }
 
