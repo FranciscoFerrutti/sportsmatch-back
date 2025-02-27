@@ -109,8 +109,7 @@ class AuthService {
         }
 
         return jwt.sign(payload, this.jwtKey, {
-            expiresIn: expiryTime, // Usa expiresIn correctamente
-            issuer: "byPS", // Asegúrate de que issuer está en SignOptions
+            expiresIn: expiryTime
         });
     };
 
