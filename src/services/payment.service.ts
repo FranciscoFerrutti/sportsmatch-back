@@ -34,22 +34,25 @@ export class PaymentService {
         return this.instance;
     }
 
-    async processPayment(reservationId: number, paymentData: any) {
-        const reservation = await this.reservationService.findReservation(reservationId);
+    async processPayment(userId: number, reservationId: number, paymentData: any) {
+        const reservation = await this.reservationService.findReservationWithOwnerDetails(reservationId);
 
-        //TODO: CHECK USER OWNER
+        if (reservation.event.userOwner?.id !== userId) {
+            throw new GenericException({
+                status: HTTP_STATUS.FORBIDDEN,
+                message: "Only the event owner can make the payment",
+                internalStatus: "NOT_EVENT_OWNER"
+            });
+        }
 
-        //TODO: CHANGE TRANSACTION AMOUNT
-
-        // Check if there's already an approved payment
-        // const existingPayment = await this.paymentPersistence.findApprovedPaymentByReservationId(reservationId);
-        // if (existingPayment) {
-        //     throw new GenericException({
-        //         status: HTTP_STATUS.CONFLICT,
-        //         message: "Reservation already has an approved payment",
-        //         internalStatus: "PAYMENT_ALREADY_APPROVED"
-        //     });
-        // }
+        const existingPayment = await this.paymentPersistence.findApprovedPaymentByReservationId(reservationId);
+        if (existingPayment) {
+            throw new GenericException({
+                status: HTTP_STATUS.CONFLICT,
+                message: "Reservation already has an approved payment",
+                internalStatus: "PAYMENT_ALREADY_APPROVED"
+            });
+        }
 
         if(!reservation.isConfirmed()){
             throw new GenericException({

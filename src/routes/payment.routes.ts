@@ -16,8 +16,7 @@ export default class PaymentRoutes{
         this.router.use(urlencoded({ extended: true }));
         // this.router.use(cors());
 
-        // TODO: ADD AUTH TO POST
-        this.router.post('/:reservationId/process_payment', this.controller.addPayment);
+        this.router.post('/:reservationId/process_payment', userAuthMiddleware, this.controller.addPayment);
         this.router.get('/:reservationId', userAuthMiddleware, this.controller.getPaymentsByReservationId);
         this.router.get('/club/:reservationId/status', clubAuthMiddleware, this.controller.getPaymentStatusForClub);
     }
