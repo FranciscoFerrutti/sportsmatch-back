@@ -6,6 +6,8 @@ import GenericException from '../exceptions/generic.exception';
 import NotFoundException from '../exceptions/notFound.exception';
 import { HTTP_STATUS } from '../constants/http.constants';
 import { OrganizerType } from "../constants/event.constants";
+import axios from 'axios';
+import RefundPersistence from '../database/persistence/refund.persistence';
 
 export class PaymentService {
     private static instance: PaymentService;
@@ -13,6 +15,7 @@ export class PaymentService {
     private payment: MPPayment;
     private paymentPersistence: PaymentPersistence;
     private reservationService: ReservationsService;
+    private refundPersistence: RefundPersistence;
 
     constructor() {
         const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
@@ -25,6 +28,7 @@ export class PaymentService {
         this.payment = new MPPayment(this.client);
         this.paymentPersistence = new PaymentPersistence();
         this.reservationService = ReservationsService.getInstance();
+        this.refundPersistence = new RefundPersistence();
     }
 
     public static getInstance(): PaymentService {
@@ -165,5 +169,51 @@ export class PaymentService {
                 phoneNumber: reservation.event.userOwner.phone_number
             }
         };
+    }
+
+    async refundPayment(paymentId: number) {
+        try {
+            const payment = await this.paymentPersistence.findPaymentById(paymentId);
+
+            if (!payment) {
+                throw new NotFoundException("Payment");
+            }
+
+            console.log("llegue")
+
+            const response = await axios.post(`https://api.mercadopago.com/v1/payments/${payment.mpId}/refunds`, {}, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
+                    'X-Idempotency-Key': `${paymentId}-${Date.now()}`
+                }
+            });
+
+            if (!response || response.status !== 201) {
+                throw new GenericException({
+                    status: HTTP_STATUS.SERVICE_UNAVAILABLE,
+                    message: "Failed to process refund",
+                    internalStatus: "REFUND_PROCESSING_ERROR"
+                });
+            }
+
+            const refundData = {
+                refundId: response.data.id,
+                paymentId: paymentId,
+                dateCreated: new Date(response.data.date_created),
+                amountRefunded: response.data.amount_refunded_to_payer
+            };
+
+            const refund = await this.refundPersistence.createRefund(refundData);
+
+            return refund;
+        } catch (error) {
+            console.error('Error Details:', error.response ? error.response.data : error.message);
+            throw new GenericException({
+                status: HTTP_STATUS.SERVICE_UNAVAILABLE,
+                message: "Error processing refund",
+                internalStatus: "REFUND_PROCESSING_ERROR"
+            });
+        }
     }
 } 

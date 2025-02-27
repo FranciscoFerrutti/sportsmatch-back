@@ -88,5 +88,29 @@ export default class PaymentController{
             next(error);
         }
     }
+
+    @document(SwaggerEndpointBuilder.create()
+        .description('Refund a payment by payment ID')
+        .responses({
+            "200": { description: 'Refund processed successfully' },
+            "404": { description: 'Payment not found' },
+            "500": { description: 'Error processing refund' }
+        })
+        .build()
+    )
+    @validateParams(Joi.object({
+        paymentId: Joi.number().required()
+    }))
+    @HttpRequestInfo("/payments/:paymentId/refund", HTTP_METHODS.POST)
+    public async refundPayment(req: Request, res: Response, next: NextFunction) {
+        try {
+            const paymentId = parseInt(req.params.paymentId);
+
+            const result = await this.paymentService.refundPayment(paymentId);
+            return res.json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 

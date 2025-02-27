@@ -28,4 +28,10 @@ export default class PaymentPersistence {
             order: [['created_at', 'DESC']]
         });
     }
+
+    async findPaymentById(paymentId: number): Promise<Payment | null> {
+        return Payment.findOne({
+            where: { id: paymentId }
+        });
+    }
 } 

@@ -19,5 +19,6 @@ export default class PaymentRoutes{
         this.router.post('/:reservationId/process_payment', userAuthMiddleware, this.controller.addPayment);
         this.router.get('/:reservationId', userAuthMiddleware, this.controller.getPaymentsByReservationId);
         this.router.get('/club/:reservationId/status', clubAuthMiddleware, this.controller.getPaymentStatusForClub);
+        this.router.post('/:paymentId/refund', userAuthMiddleware, this.controller.refundPayment);
     }
 }
