@@ -40,7 +40,7 @@ class App {
             this.app.use(express.json({ limit: '50mb' }));
             this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
             this.app.use(cors({
-                origin: "*",
+                origin: process.env.CORS_ORIGIN?.split(",") || ["http://localhost:5173"],
                 methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                 allowedHeaders: ["Content-Type", "Authorization"],
                 exposedHeaders: ['c-api-key'],
