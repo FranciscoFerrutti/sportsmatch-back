@@ -218,6 +218,10 @@ export default class ReservationPersistence {
                     }]
                 },
                 {
+                    model: TimeSlot,
+                    attributes: ['id', 'start_time', 'end_time', 'availability_date']
+                },
+                {
                     model: Field,
                     include: [{
                         model: Club,
