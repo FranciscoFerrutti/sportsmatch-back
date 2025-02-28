@@ -40,12 +40,12 @@ class App {
             this.app.use(express.json({ limit: '50mb' }));
             this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
             this.app.use(cors({
-                origin: true,
+                origin: ["https://sportsmatch-web.vercel.app"],
                 methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                 allowedHeaders: ["Content-Type", "Authorization"],
                 exposedHeaders: ['c-api-key'],
-                credentials: true, // Habilita cookies y autenticación
-                optionsSuccessStatus: 204 // Evita problemas con respuestas de preflight
+                credentials: true,
+                optionsSuccessStatus: 204
             }));
 
         }
