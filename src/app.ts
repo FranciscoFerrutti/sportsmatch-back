@@ -40,9 +40,9 @@ class App {
             this.app.use(express.json({ limit: '50mb' }));
             this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
             this.app.use(cors({
-                origin: ["https://sportsmatch-web.vercel.app"],
+                origin: true,
                 methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                allowedHeaders: ["Content-Type", "Authorization"],
+                allowedHeaders: ["Content-Type", "Authorization", "c-basic-auth", "x-auth-type"],
                 exposedHeaders: ['c-api-key'],
                 credentials: true,
                 optionsSuccessStatus: 204
