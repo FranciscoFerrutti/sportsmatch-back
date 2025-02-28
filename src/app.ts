@@ -42,7 +42,7 @@ class App {
             this.app.use(cors({
                 origin: true,
                 methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                allowedHeaders: ["Content-Type", "Authorization", "c-basic-auth", "x-auth-type"],
+                allowedHeaders: ["Content-Type", "Authorization", "c-basic-auth", "x-auth-type", "c-api-key"],
                 exposedHeaders: ['c-api-key'],
                 credentials: true,
                 optionsSuccessStatus: 204
