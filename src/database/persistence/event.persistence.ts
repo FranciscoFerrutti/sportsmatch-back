@@ -182,13 +182,13 @@ class EventPersistence {
                 {
                     model: User,
                     as: 'userOwner',
-                    attributes: ['firstname', 'id'],
+                    attributes: ['firstname', 'id', 'email'],
                     required: false,
                 },
                 {
                     model: Club,
                     as: 'clubOwner',
-                    attributes: ['name', 'id'],
+                    attributes: ['name', 'id', 'email'],
                     required: false,
                 },
                 {
