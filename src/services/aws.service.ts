@@ -39,6 +39,25 @@ class AWSService {
         });
         return presignedPUTURL;
     }
+
+    async uploadFileToS3(filename: string, fileBuffer: Buffer, contentType: string) {
+        try {
+            const params = {
+                Bucket: this.PROFILE_PICTURES_BUCKET,
+                Key: filename,
+                Body: fileBuffer,
+                ContentType: contentType,
+                ACL: 'private', // Puedes cambiarlo a 'public-read' si quieres acceso público
+            };
+
+            await this.s3.upload(params).promise();
+            console.log(`✅ Archivo subido a S3: ${filename}`);
+        } catch (error) {
+            console.error("❌ Error subiendo archivo a S3:", error);
+            throw error;
+        }
+    }
+
 }
 
 export default AWSService;

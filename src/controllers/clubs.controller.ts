@@ -123,7 +123,7 @@ class ClubsController{
         const clubId = req.params.clubId;
 
         try {
-            const imageKey = `clubid_${clubId}.png`; // ✅ Usar "_" en vez de ":"
+            const imageKey = `clubid_${clubId}.png`;
             console.log(`📌 Generando presigned GET URL para: ${imageKey}`);
 
             const presignedGetUrl = this.awsService.getPresignedGetUrl(imageKey);
@@ -144,21 +144,28 @@ class ClubsController{
     @HttpRequestInfo("/clubs/:clubId/image", HTTP_METHODS.PUT)
     public async updateClubImage(req: Request, res: Response, next: NextFunction) {
         const clubId = req.params.clubId;
+        const file = req.file;  // 🟢 Usar multer o algún otro middleware para recibir el archivo
 
         try {
-            const imageKey = `clubid_${clubId}.png`; // ✅ Usar "_" en vez de ":"
-            console.log(`📌 Generando presigned PUT URL para: ${imageKey}`);
+            if (!file) {
+                throw new Error("No se recibió ningún archivo.");
+            }
 
-            // 🔥 Asegurar `Content-Type` en la URL pre-firmada
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(imageKey);
-            console.log(`✅ Presigned PUT URL generada: ${presignedPutUrl}`);
+            const imageKey = `clubid_${clubId}.png`;
+            console.log(`📌 Subiendo imagen a S3 con clave: ${imageKey}`);
 
-            res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
+            // 🔥 Subir la imagen a S3 directamente
+            await this.awsService.uploadFileToS3(imageKey, file.buffer, file.mimetype);
+
+            console.log(`✅ Imagen subida correctamente: ${imageKey}`);
+
+            res.status(HTTP_STATUS.OK).send({ message: "Imagen subida correctamente", imageUrl: imageKey });
         } catch (err) {
-            console.error("❌ Error generando presigned PUT URL:", err);
+            console.error("❌ Error subiendo la imagen:", err);
             next(err);
         }
     }
+
 }
 
 export default ClubsController;
