@@ -7,13 +7,16 @@ import {HTTP_METHODS, HTTP_STATUS} from "../constants/http.constants";
 import {NextFunction, Request, Response} from "express";
 import Joi, {options} from "joi";
 import {LOCATION_COORDINATES} from "../constants/neighbourhoods.constants";
+import AWSService from "../services/aws.service";
 
 @autobind
 class ClubsController{
     private readonly clubService: ClubService;
+    private readonly awsService: AWSService;
 
     constructor() {
-        this.clubService = ClubService.getInstance()
+        this.clubService = ClubService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -105,6 +108,40 @@ class ClubsController{
             if (userIdPath !== userId) throw new Error("User can't update another user");
             await this.clubService.updateLocation(userId, latitude, longitude, address);
             res.status(HTTP_STATUS.OK).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({ "200": { description: "OK", schema: { type: "object" } } })
+        .build()
+    )
+    @HttpRequestInfo("/clubs/:clubId/image", HTTP_METHODS.GET)
+    public async getClubImage(req: Request, res: Response, next: NextFunction) {
+        const clubId = req.params.clubId;
+
+        try {
+            const presignedGetUrl = this.awsService.getPresignedGetUrl(`clubid:${clubId}`);
+            res.status(HTTP_STATUS.OK).send({ presignedGetUrl });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({ "200": { description: "OK" } })
+        .build()
+    )
+    @validateParams(Joi.object({ clubId: Joi.number().min(1).required() }))
+    @HttpRequestInfo("/clubs/:clubId/image", HTTP_METHODS.PUT)
+    public async updateClubImage(req: Request, res: Response, next: NextFunction) {
+        const clubId = req.params.clubId;
+
+        try {
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(`clubid:${clubId}`);
+            res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
             next(err);
         }

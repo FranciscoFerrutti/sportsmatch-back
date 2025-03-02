@@ -17,7 +17,7 @@ class UsersController {
 
     constructor() {
         this.usersService = UsersService.getInstance();
-        // this.awsService = AWSService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
