@@ -123,7 +123,7 @@ class ClubsController{
         const clubId = req.params.clubId;
 
         try {
-            const presignedGetUrl = this.awsService.getPresignedGetUrl(`clubid_${clubId}.png`);
+            const presignedGetUrl = this.awsService.getPresignedGetUrl(`club_${clubId}.png`);
             res.status(HTTP_STATUS.OK).send({ presignedGetUrl });
         } catch (err) {
             next(err);
@@ -139,6 +139,7 @@ class ClubsController{
     public async updateClubImage(req: Request, res: Response, next: NextFunction) {
         const clubId = req.params.clubId;
 
+
         try {
             if (!clubId) {
                 console.warn("⚠️ clubId no proporcionado en la solicitud.");
@@ -146,7 +147,7 @@ class ClubsController{
             }
 
             const contentType = req.headers['content-type'] || 'image/png';
-            const imageKey = `clubid_${clubId}.png`;
+            const imageKey = `club_${clubId}.png`;
 
             console.log(`📌 Generando presigned PUT URL para: ${imageKey} con Content-Type: ${contentType}`);
 
@@ -160,9 +161,9 @@ class ClubsController{
             const imageUrl = `https://new-sportsmatch-user-pictures.s3.amazonaws.com/${imageKey}`;
 
             // Guardar la URL de la imagen en la base de datos
-            await this.clubService.updateClub(clubId, { imageUrl });
+            await this.clubService.updateClub(clubId, { imageUrl : presignedPutUrl });
 
-            console.log(`✅ Imagen URL guardada en la base de datos: ${imageUrl}`);
+            console.log(`✅ Imagen URL guardada en la base de datos: ${presignedPutUrl}`);
             console.log(`🔗 Presigned PUT URL: ${presignedPutUrl}`);
 
             res.status(HTTP_STATUS.OK).json({ presignedPutUrl, imageUrl });
