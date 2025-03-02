@@ -32,13 +32,14 @@ class AWSService {
     }
 
     getPresignedPostUrl(filename: string, contentType: string) {
-        const presignedPUTURL = this.s3.getSignedUrl('putObject', {
+        return this.s3.getSignedUrl('putObject', {
             Bucket: this.PROFILE_PICTURES_BUCKET,
             Key: filename,
-            Expires: this.URL_TIMEOUT
+            Expires: this.URL_TIMEOUT,
+            ContentType: contentType
         });
-        return presignedPUTURL;
     }
+
 }
 
 export default AWSService;
