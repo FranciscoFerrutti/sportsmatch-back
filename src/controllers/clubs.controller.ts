@@ -140,8 +140,11 @@ class ClubsController{
         const clubId = req.params.clubId;
 
         try {
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(`clubid_${clubId}.png`);
-            res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
+            const contentType = req.headers['content-type'] || 'image/png';
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(`clubid_${clubId}.png`, contentType);
+
+            // ✅ Devolver JSON válido
+            res.status(HTTP_STATUS.OK).json({ presignedPutUrl });
         } catch (err) {
             next(err);
         }
