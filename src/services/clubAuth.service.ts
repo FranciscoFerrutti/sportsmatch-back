@@ -102,7 +102,7 @@ class ClubAuthService {
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
         const payload = {id: userId, email: email, type: 'club'};
         const key = this.jwtKey;
-        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
+        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: Number(expiryTime) });
     }
 }
 
