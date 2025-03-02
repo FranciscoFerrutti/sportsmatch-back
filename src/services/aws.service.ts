@@ -36,7 +36,8 @@ class AWSService {
             Bucket: this.PROFILE_PICTURES_BUCKET,
             Key: filename,
             Expires: this.URL_TIMEOUT,
-            ContentType: contentType, // ✅ Agregar Content-Type
+            ContentType: contentType,
+            ACL: 'public-read'
         });
         return presignedPUTURL;
     }
