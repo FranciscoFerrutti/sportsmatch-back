@@ -69,13 +69,13 @@ class ClubsController{
     @HttpRequestInfo("/clubs/:clubId", HTTP_METHODS.PUT)
     public async updateClub(req: Request, res: Response, next: NextFunction) {
         const userIdPath = req.params.clubId;
-        const { phoneNumber, location } = req.body;
+        const { description } = req.body;
         const userId = req.user.id;
 
         try {
             if (userIdPath !== userId) throw new Error("User can't update another user");
 
-            await this.clubService.updateClub(userId, phoneNumber, location);
+            await this.clubService.updateClub(userId, {description});
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
@@ -140,16 +140,37 @@ class ClubsController{
         const clubId = req.params.clubId;
 
         try {
-            const contentType = req.headers['content-type'] || 'image/png';
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(`clubid_${clubId}.png`, contentType);
+            if (!clubId) {
+                console.warn("⚠️ clubId no proporcionado en la solicitud.");
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "El ID del club es obligatorio." });
+            }
 
-            // ✅ Devolver JSON válido
-            res.status(HTTP_STATUS.OK).json({ presignedPutUrl });
+            const contentType = req.headers['content-type'] || 'image/png';
+            const imageKey = `clubid_${clubId}.png`;
+
+            console.log(`📌 Generando presigned PUT URL para: ${imageKey} con Content-Type: ${contentType}`);
+
+            // Generar URL pre-firmada para subir la imagen
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(imageKey, contentType);
+            if (!presignedPutUrl) {
+                throw new Error("No se pudo generar la URL pre-firmada.");
+            }
+
+            // Construir la URL pública de la imagen en S3
+            const imageUrl = `https://new-sportsmatch-user-pictures.s3.amazonaws.com/${imageKey}`;
+
+            // Guardar la URL de la imagen en la base de datos
+            await this.clubService.updateClub(clubId, { imageUrl });
+
+            console.log(`✅ Imagen URL guardada en la base de datos: ${imageUrl}`);
+            console.log(`🔗 Presigned PUT URL: ${presignedPutUrl}`);
+
+            res.status(HTTP_STATUS.OK).json({ presignedPutUrl, imageUrl });
         } catch (err) {
+            console.error("❌ Error al generar presigned PUT URL o actualizar la imagen:", err);
             next(err);
         }
     }
-
 }
 
 export default ClubsController;

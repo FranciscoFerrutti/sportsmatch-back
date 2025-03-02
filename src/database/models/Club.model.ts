@@ -54,6 +54,13 @@ export default class Club extends Model<IClubAttributes> {
     @Column(DataType.STRING)
     description?: string;
 
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    imageUrl?: string;
+
+
     @HasOne(() => ClubLocation)
     location!: ClubLocation;
 
