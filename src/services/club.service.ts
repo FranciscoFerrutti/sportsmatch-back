@@ -74,7 +74,7 @@ class ClubService {
             // Construir objeto con los campos a actualizar
             const updateFields: Partial<Club> = {};
             if (description) updateFields.description = description;
-            if (imageUrl) updateFields.imageUrl = imageUrl;
+            if (imageUrl) updateFields.image_url = imageUrl;
 
             await ClubPersistence.updateClub(clubId, updateFields);
 

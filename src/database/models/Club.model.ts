@@ -58,7 +58,7 @@ export default class Club extends Model<IClubAttributes> {
         type: DataType.STRING,
         allowNull: true,
     })
-    imageUrl?: string;
+    image_url?: string;
 
 
     @HasOne(() => ClubLocation)
