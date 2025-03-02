@@ -123,9 +123,15 @@ class ClubsController{
         const clubId = req.params.clubId;
 
         try {
-            const presignedGetUrl = this.awsService.getPresignedGetUrl(`clubid:${clubId}`);
+            const imageKey = `clubid_${clubId}.png`; // ✅ Usar "_" en vez de ":"
+            console.log(`📌 Generando presigned GET URL para: ${imageKey}`);
+
+            const presignedGetUrl = this.awsService.getPresignedGetUrl(imageKey);
+            console.log(`✅ Presigned GET URL generada: ${presignedGetUrl}`);
+
             res.status(HTTP_STATUS.OK).send({ presignedGetUrl });
         } catch (err) {
+            console.error("❌ Error generando presigned GET URL:", err);
             next(err);
         }
     }
@@ -140,9 +146,16 @@ class ClubsController{
         const clubId = req.params.clubId;
 
         try {
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(`clubid:${clubId}`);
+            const imageKey = `clubid_${clubId}.png`; // ✅ Usar "_" en vez de ":"
+            console.log(`📌 Generando presigned PUT URL para: ${imageKey}`);
+
+            // 🔥 Asegurar `Content-Type` en la URL pre-firmada
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(imageKey);
+            console.log(`✅ Presigned PUT URL generada: ${presignedPutUrl}`);
+
             res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
+            console.error("❌ Error generando presigned PUT URL:", err);
             next(err);
         }
     }
