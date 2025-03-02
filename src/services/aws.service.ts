@@ -26,7 +26,8 @@ class AWSService {
         const presignedGETURL = this.s3.getSignedUrl('getObject', {
             Bucket: this.PROFILE_PICTURES_BUCKET,
             Key: filename,
-            Expires: this.URL_TIMEOUT
+            Expires: this.URL_TIMEOUT,
+            ACL: 'public-read'
         });
         return presignedGETURL;
     }
@@ -36,7 +37,6 @@ class AWSService {
             Bucket: this.PROFILE_PICTURES_BUCKET,
             Key: filename,
             Expires: this.URL_TIMEOUT,
-            ContentType: contentType,
             ACL: 'public-read'
         });
         return presignedPUTURL;
