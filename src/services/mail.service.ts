@@ -60,7 +60,7 @@ export class MailService {
         const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
-        const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
+        const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
             message: "La reserva en la cancha" + field + "para la fecha "+ date +" fue cancelada con exito." +
                 "Como el usuario ya habia abonado la reserva le devolvimos $" + amount,
@@ -98,7 +98,7 @@ export class MailService {
         const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
-        const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
+        const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
             message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha "+  date,
             clickme: "Ver reserva",
@@ -154,7 +154,7 @@ export class MailService {
         const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
-        const joinUrl = `sportsmatch://myevents`;
+        const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
             message: "Tenes una nueva reserva para la cancha nombre: "+ field + " el dia " + date.split(' ')[0] + ". Recordá aceptarla desde la web en la sección “Reservas”",
             clickme: "Ver reservas",

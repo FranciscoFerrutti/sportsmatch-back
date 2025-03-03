@@ -186,11 +186,9 @@ class ReservationsService {
 
             const totalDuration = timeSlots.length * firstSlot.field.slot_duration;
 
-            //TODO: HACE MAL LA FECHA CALCULA UN DIa menos
-            console.log(firstSlot.availability_date)
             const scheduleDate = new Date(firstSlot.availability_date);
             const [hours, minutes] = firstSlot.start_time.toString().split(':');
-            scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            scheduleDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
             await this.eventsService.updateEventById(updatedReservation.eventId.toString(), {
                 location: clubLocation.address,
