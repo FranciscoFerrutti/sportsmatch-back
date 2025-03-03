@@ -27,7 +27,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Lamentamos informarte que tu reserva en" + club + "para la fecha "+ date.split(' ')[0] +" fue cancelada. " +
+            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+ date +" fue cancelada. " +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
             url: joinUrl
@@ -44,7 +44,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Lamentamos informarte que tu reserva en" + club + "para la fecha "+ date.split(' ')[0] +" fue cancelada. " +
+            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+ date +" fue cancelada. " +
                 "Te devolvimos $" + amount +". Lo veras reflejado el monto en los detalles de tu proxima factura ó en tu cuenta corriente en caso de débito." +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
@@ -62,8 +62,8 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "La reserva en la cancha" + field + "para la fecha "+ date +" fue cancelada con exito." +
-                "Como el usuario ya habia abonado la reserva le devolvimos $" + amount,
+            message: "La reserva en la cancha nombre: " + field + " para la fecha "+ date +" fue cancelada con exito." +
+                "Como el usuario ya habia abonado la reserva le devolvimos $" + amount + ".",
             clickme: "Ver reservas",
             url: joinUrl
         });

@@ -233,13 +233,7 @@ class ReservationsService {
             const now = new Date();
             const scheduleDate = new Date(reservation.event.schedule);
             const timeDifference = scheduleDate.getTime() - now.getTime();
-            const hoursUntilReservation = timeDifference / (1000 * 60 * 60);
-
-            console.log(hoursUntilReservation)
-            console.log(now)
-            console.log(scheduleDate)
-            console.log(reservation.event.schedule)
-            //send emails
+            const hoursUntilReservation = (timeDifference / (1000 * 60 * 60)) + 3;
             
             if (reservationStatus == ReservationStatus.COMPLETED && (organizerType === OrganizerType.CLUB  || hoursUntilReservation >= 24) ) {
                 const refund = await this.paymentService.refundPayment(reservationId);

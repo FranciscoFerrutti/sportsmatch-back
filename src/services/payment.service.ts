@@ -181,7 +181,6 @@ export class PaymentService {
             if (!payment) {
                 throw new NotFoundException("Payment");
             }
-            console.log(payment.mpId)
 
             const response = await axios.post(`https://api.mercadopago.com/v1/payments/${payment.mpId}/refunds`, {}, {
                 headers: {
@@ -190,11 +189,6 @@ export class PaymentService {
                     'X-Idempotency-Key': `${payment.id}-${Date.now()}`
                 }
             });
-            console.log("es problema de mercado pago")
-            console.log(response)
-            console.log(response.status)
-            console.log(response.headers)
-            console.log(response.data)
 
             if (!response || response.status !== 201) {
                 throw new GenericException({
