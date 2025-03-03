@@ -63,10 +63,8 @@ class ClubsController{
         clubId: Joi.number().min(1).required()
     }))
     @validateBody(Joi.object({
-        phoneNumber: Joi.string().optional(),
-        location: Joi.string().optional(),
-        description: Joi.string().allow('').optional()
-    }))
+        description: Joi.string().optional()
+    }).optional())
     @HttpRequestInfo("/clubs/:clubId", HTTP_METHODS.PUT)
     public async updateClub(req: Request, res: Response, next: NextFunction) {
         const userIdPath = req.params.clubId;
