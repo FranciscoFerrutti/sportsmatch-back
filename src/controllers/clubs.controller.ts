@@ -65,6 +65,8 @@ class ClubsController{
     @validateBody(Joi.object({
         phoneNumber: Joi.string().optional(),
         location: Joi.string().optional(),
+        imageUrl: Joi.string().uri().optional(),
+        description: Joi.string().optional()
     }))
     @HttpRequestInfo("/clubs/:clubId", HTTP_METHODS.PUT)
     public async updateClub(req: Request, res: Response, next: NextFunction) {
@@ -135,6 +137,13 @@ class ClubsController{
         .build()
     )
     @validateParams(Joi.object({ clubId: Joi.number().min(1).required() }))
+    @validateBody(Joi.object({
+        phoneNumber: Joi.string().optional(),
+        location: Joi.string().optional(),
+        imageUrl: Joi.string().uri().optional(),
+        description: Joi.string().optional()
+    }))
+
     @HttpRequestInfo("/clubs/:clubId/image", HTTP_METHODS.PUT)
     public async updateClubImage(req: Request, res: Response, next: NextFunction) {
         const clubId = req.params.clubId;
