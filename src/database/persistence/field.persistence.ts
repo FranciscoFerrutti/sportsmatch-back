@@ -66,7 +66,7 @@ class FieldPersistence{
     static async updateField(field: Field, fieldData: IFieldUpdate) {
         await field.update({
             name: fieldData.name,
-            cost_per_minute: fieldData.cost,
+            cost_per_slot: fieldData.cost,
             description: fieldData.description,
             capacity: fieldData.capacity,
             slot_duration: fieldData.slot_duration
