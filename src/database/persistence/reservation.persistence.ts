@@ -214,7 +214,7 @@ export default class ReservationPersistence {
                     include: [{
                         model: User,
                         as: 'userOwner',
-                        attributes: ['firstname', 'lastname', 'phone_number', 'id']
+                        attributes: ['firstname', 'lastname', 'phone_number', 'id', 'image_url']
                     }]
                 },
                 {
