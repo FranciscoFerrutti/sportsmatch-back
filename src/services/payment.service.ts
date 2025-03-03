@@ -8,16 +8,17 @@ import { HTTP_STATUS } from '../constants/http.constants';
 import { OrganizerType } from "../constants/event.constants";
 import axios from 'axios';
 import RefundPersistence from '../database/persistence/refund.persistence';
+import {MailService} from "./mail.service";
 
 export class PaymentService {
     private static instance: PaymentService;
-    private client: MercadoPagoConfig;
+    private readonly client: MercadoPagoConfig;
     private payment: MPPayment;
     private paymentPersistence: PaymentPersistence;
     private reservationService: ReservationsService;
     private refundPersistence: RefundPersistence;
 
-    constructor() {
+    constructor(reservationService: ReservationsService) {
         const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
         if (!token) throw new GenericException({status: HTTP_STATUS.SERVER_ERROR, message: "mercado pago token not defined", internalStatus: "BAD_CONFIGURATION"});
         
@@ -27,13 +28,13 @@ export class PaymentService {
         });
         this.payment = new MPPayment(this.client);
         this.paymentPersistence = new PaymentPersistence();
-        this.reservationService = ReservationsService.getInstance();
+        this.reservationService = reservationService;
         this.refundPersistence = new RefundPersistence();
     }
 
-    public static getInstance(): PaymentService {
+    public static getInstance(reservationService: ReservationsService): PaymentService {
         if (!this.instance) {
-            this.instance = new PaymentService();
+            this.instance = new PaymentService(reservationService);
         }
         return this.instance;
     }
@@ -95,6 +96,8 @@ export class PaymentService {
 
             if (paymentRecord.transactionStatus === PaymentStatus.APPROVED) {
                 await this.reservationService.completeReservation(reservationId);
+                await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.toString());
+                await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.toString(), paymentRecord.transactionAmount);
             }
 
             return paymentRecord;
@@ -171,23 +174,27 @@ export class PaymentService {
         };
     }
 
-    async refundPayment(paymentId: number) {
+    async refundPayment(reservationId: number) {
         try {
-            const payment = await this.paymentPersistence.findPaymentById(paymentId);
+            const payment = await this.paymentPersistence.findApprovedPaymentByReservationId(reservationId);
 
             if (!payment) {
                 throw new NotFoundException("Payment");
             }
-
-            console.log("llegue")
+            console.log(payment.mpId)
 
             const response = await axios.post(`https://api.mercadopago.com/v1/payments/${payment.mpId}/refunds`, {}, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
-                    'X-Idempotency-Key': `${paymentId}-${Date.now()}`
+                    'X-Idempotency-Key': `${payment.id}-${Date.now()}`
                 }
             });
+            console.log("es problema de mercado pago")
+            console.log(response)
+            console.log(response.status)
+            console.log(response.headers)
+            console.log(response.data)
 
             if (!response || response.status !== 201) {
                 throw new GenericException({
@@ -197,16 +204,15 @@ export class PaymentService {
                 });
             }
 
+
             const refundData = {
                 refundId: response.data.id,
-                paymentId: paymentId,
+                paymentId: payment.id,
                 dateCreated: new Date(response.data.date_created),
                 amountRefunded: response.data.amount_refunded_to_payer
             };
 
-            const refund = await this.refundPersistence.createRefund(refundData);
-
-            return refund;
+            return await this.refundPersistence.createRefund(refundData);
         } catch (error) {
             console.error('Error Details:', error.response ? error.response.data : error.message);
             throw new GenericException({
