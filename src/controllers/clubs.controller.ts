@@ -65,7 +65,6 @@ class ClubsController{
     @validateBody(Joi.object({
         phoneNumber: Joi.string().optional(),
         location: Joi.string().optional(),
-        imageUrl: Joi.string().allow('').optional(),
         description: Joi.string().allow('').optional()
     }))
     @HttpRequestInfo("/clubs/:clubId", HTTP_METHODS.PUT)
