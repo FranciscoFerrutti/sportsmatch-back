@@ -57,24 +57,20 @@ class ClubService {
         try {
             console.log(`🔄 Actualizando club ID: ${clubId} con datos:`, updateData);
 
-            const { description, imageUrl } = updateData;
-
-            if (!description && !imageUrl) {
+            if (!updateData.description && !updateData.imageUrl) {
                 console.warn("⚠️ No se proporcionaron datos para actualizar.");
                 throw new Error("Debe proporcionar al menos un campo para actualizar.");
             }
 
             const club = await ClubPersistence.getClubById(clubId);
-
             if (!club) {
                 console.error(`❌ No se encontró el club con ID: ${clubId}`);
                 throw new Error("Club no encontrado.");
             }
 
-            // Construir objeto con los campos a actualizar
             const updateFields: Partial<Club> = {};
-            if (description) updateFields.description = description;
-            if (imageUrl) updateFields.image_url = imageUrl;
+            if (updateData.description !== undefined) updateFields.description = updateData.description;
+            if (updateData.imageUrl !== undefined) updateFields.image_url = updateData.imageUrl;
 
             await ClubPersistence.updateClub(clubId, updateFields);
 
@@ -84,6 +80,7 @@ class ClubService {
             throw new Error("Error al actualizar club.");
         }
     }
+
 
 
 
