@@ -52,7 +52,7 @@ export default class ReservationPersistence {
                     attributes: ['id', 'name', 'club_id'],
                     include: [{
                         model: Club,
-                        attributes: ['id', 'name']
+                        attributes: ['id', 'name', 'email']
                     }]
                 }
             ],
@@ -115,7 +115,7 @@ export default class ReservationPersistence {
             }
         );
 
-        return (await this.findById(reservationId))!;
+        return (await this.findReservationWithOwnerDetails(reservationId))!;
     }
 
     async deleteReservation(
@@ -214,7 +214,7 @@ export default class ReservationPersistence {
                     include: [{
                         model: User,
                         as: 'userOwner',
-                        attributes: ['firstname', 'lastname', 'phone_number', 'id', 'image_url']
+                        attributes: ['firstname', 'lastname', 'phone_number', 'id', 'email', 'image_url']
                     }]
                 },
                 {
@@ -225,7 +225,7 @@ export default class ReservationPersistence {
                     model: Field,
                     include: [{
                         model: Club,
-                        attributes: ['id']
+                        attributes: ['id', 'email', 'name']
                     }]
                 }
             ]

@@ -7,13 +7,14 @@ import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEnd
 import { document } from "../utils/swaggerDocumentation/annotations";
 import GenericException from "../exceptions/generic.exception";
 import { PaymentService } from '../services/payment.service';
+import ReservationsService from "../services/reservations.service";
 
 @autobind
 export default class PaymentController{
     private readonly paymentService: PaymentService;
 
     constructor() {
-        this.paymentService = PaymentService.getInstance();
+        this.paymentService = PaymentService.getInstance(ReservationsService.getInstance());
     }
 
     @document(SwaggerEndpointBuilder.create()
