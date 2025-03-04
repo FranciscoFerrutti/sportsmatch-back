@@ -7,11 +7,13 @@ export default class EventDetailDtoMapper {
         const owner = event.organizerType === OrganizerType.USER
             ? {
                 firstName: event.userOwner?.firstname || '',
-                id: event.userOwner?.id || 0
+                id: event.userOwner?.id || 0,
+                email: event.userOwner?.email || ''
             }
             : {
                 firstName: event.clubOwner?.name || '',
-                id: event.clubOwner?.id || 0
+                id: event.clubOwner?.id || 0,
+                email: event.clubOwner?.email || ''
             };
 
         const eventDetailDto: IEventDetailDto = {

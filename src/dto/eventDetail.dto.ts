@@ -9,7 +9,8 @@ export default interface IEventDetailDto {
     duration: number;
     owner: { 
         firstName: string,
-        id: number 
+        id: number,
+        email: string
     }
     status: number;
 }

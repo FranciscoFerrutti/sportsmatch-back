@@ -13,6 +13,7 @@ import IEventDetailDto from "../dto/eventDetail.dto";
 import TimeSlot from "../database/models/TimeSlot.model";
 import {OrganizerType} from "../constants/event.constants";
 import Reservation from "../database/models/Reservation.model";
+import {MailService} from "./mail.service";
 
 class ReservationsService {
     private static instance: ReservationsService;
@@ -110,18 +111,14 @@ class ReservationsService {
         const transaction = await this.reservationPersistence.startTransaction();
         
         try {
-            // Validate event ownership
-            await this.getAndValidateEventOwnership(eventId, userId);
+            const event = await this.getAndValidateEventOwnership(eventId, userId);
 
-            // Get and lock the slots in a single operation
             const slots = await this.timeSlotsService.checkAndLockSlots(slotIds, transaction);
             this.validateSlots(slots, fieldId);
 
-            // Calculate total cost
             const field = await this.fieldsService.getFieldById(fieldId.toString());
             const totalCost = slots.length * field.cost_per_slot;
 
-            // Create reservation
             const reservation = await this.reservationPersistence.createReservation(
                 {
                     eventId,
@@ -134,6 +131,7 @@ class ReservationsService {
             );
 
             await transaction.commit();
+            await MailService.sendReservationSubmit(event.owner.email, reservation.field.club.name, event.schedule)
             return await this.mapToReservationDetail(reservation);
 
         } catch (error) {
