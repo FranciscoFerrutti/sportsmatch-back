@@ -52,31 +52,34 @@ class ClubsController{
     }
 
     @document(SwaggerEndpointBuilder.create()
-        .responses({
-            "200": {
-                description: "OK",
-            }
-        })
+        .responses({ "200": { description: "OK" } })
         .build()
     )
-    @validateParams(Joi.object({
-        clubId: Joi.number().min(1).required()
-    }))
+    @validateParams(Joi.object({ clubId: Joi.number().min(1).required() }))
     @validateBody(Joi.object({
-        description: Joi.string().optional()
+        description: Joi.string().optional(),
+        imageUrl: Joi.string().uri().optional()
     }).optional())
     @HttpRequestInfo("/clubs/:clubId", HTTP_METHODS.PUT)
     public async updateClub(req: Request, res: Response, next: NextFunction) {
-        const userIdPath = req.params.clubId;
-        const { description } = req.body;
-        const userId = req.user.id;
+        const clubId = req.params.clubId;
+        const { description, imageUrl } = req.body;
 
         try {
-            if (userIdPath !== userId) throw new Error("User can't update another user");
+            // Validar que haya al menos un campo para actualizar
+            if (!description && !imageUrl) {
+                console.warn("⚠️ No se proporcionaron datos para actualizar.");
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "Debe proporcionar al menos un campo para actualizar." });
+            }
 
-            await this.clubService.updateClub(userId, {description});
-            res.status(HTTP_STATUS.OK).send();
+            console.log(`🔄 Actualizando club ID: ${clubId} con datos:`, { description, imageUrl });
+
+            // Llamar al servicio de actualización con los valores proporcionados
+            await this.clubService.updateClub(clubId, { description, imageUrl });
+
+            res.status(HTTP_STATUS.OK).send({ message: "Club actualizado correctamente." });
         } catch (err) {
+            console.error("❌ Error al actualizar club:", err);
             next(err);
         }
     }
