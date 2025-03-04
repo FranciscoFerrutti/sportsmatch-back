@@ -32,9 +32,10 @@ class ClubService {
         email: string,
         name: string,
         phone_number: string,
+        description: string,
         transaction: Transaction
     ): Promise<void> {
-        await ClubPersistence.createClub({ email, name, phone_number}, transaction);
+        await ClubPersistence.createClub({ email, name, phone_number, description}, transaction);
     }
 
 

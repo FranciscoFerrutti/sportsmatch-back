@@ -27,7 +27,7 @@ class ClubAuthService {
         this.clubService = ClubService.getInstance();
     }
 
-    async createAuth(email: string, password: string, clubName: string, phoneNumber: string) {
+    async createAuth(email: string, password: string, clubName: string, phoneNumber: string, description: string) {
         let transaction;
         try {
             transaction = await sequelize.transaction();
@@ -36,7 +36,7 @@ class ClubAuthService {
 
             await ClubAuthPersistence.createAuth(email, passwordHash.toString(), transaction);
 
-            await this.clubService.createUser(email, clubName, phoneNumber, transaction);
+            await this.clubService.createUser(email, clubName, phoneNumber, description, transaction);
 
             await transaction.commit();
         } catch (err) {
