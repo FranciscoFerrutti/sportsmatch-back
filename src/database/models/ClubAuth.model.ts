@@ -27,6 +27,22 @@ class ClubAuth extends Model {
     })
     declare password: string;
 
+    @Column({
+        allowNull: false,
+        type: DataType.BOOLEAN,
+        defaultValue: false,
+        field: 'is_verified'
+    })
+    declare isVerified: boolean;
+
+    @Column({
+        allowNull: true,
+        type: DataType.STRING(64),
+        defaultValue: null,
+        field: 'verification_token'
+    })
+    declare verificationToken: string | null;
+
     @UpdatedAt
     declare updated_at: Date;
 

@@ -164,6 +164,26 @@ export class MailService {
         await this.sendMail(user, subject, html);
     }
     //-----------------------
+
+    //EMAIL VERIFICATION
+    public static async sendClubEmailVerification(email: string, clubName: string, verificationToken: string) {
+        const subject = "Verifica tu email - SportMatch";
+
+        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const template = HandleBars.compile(emailTemplateSource);
+
+        const joinUrl = FRONTEND_URI + `/verify-email?token=${verificationToken}`;
+        const html = template({
+            message: "¡Bienvenido a SportMatch " + clubName + "! " +
+                "Para completar tu registro, por favor verifica tu dirección de email haciendo click en el botón de abajo. " +
+                "Este link expirará en 24 horas.",
+            clickme: "Verificar Email",
+            url: joinUrl
+        });
+
+        await this.sendMail(email, subject, html);
+    }
+
     public static async sendMail(to: string | string[], subject: string, html: string) {
         const transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,

@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { urlencoded } from 'body-parser';
 import cors from 'cors';
@@ -19,6 +18,7 @@ export default class ClubAuthRoutes {
         // this.router.use(cors());
 
         this.router.post('/', this.controller.createAuth);
+        this.router.post('/verify', this.controller.verifyEmail);
         this.router.get('/', userBasicAuthMiddleware, this.controller.login);
     }
 }

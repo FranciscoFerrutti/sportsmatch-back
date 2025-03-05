@@ -9,12 +9,14 @@ import * as jwt from "jsonwebtoken";
 import Bluebird from "bluebird";
 import Crypto from "crypto";
 import ClubService from "./club.service";
+import { MailService } from "./mail.service";
 
 class ClubAuthService {
     private static instance: ClubAuthService;
     private clubService: ClubService;
     private readonly jwtKey: string;
     private readonly accessTokenExpireTime: string;
+    private readonly FRONTEND_URI: string;
 
     static getInstance() {
         if (!ClubAuthService.instance) ClubAuthService.instance = new ClubAuthService();
@@ -25,6 +27,11 @@ class ClubAuthService {
         this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '7600000';
         this.jwtKey = process.env.JWT_KEY ?? 'kvajfvhjabdsjhvajdhvjsvbsmn';
         this.clubService = ClubService.getInstance();
+        this.FRONTEND_URI = process.env.FRONTEND_URI || "https://your-frontend-url.com";
+    }
+
+    private generateVerificationToken(): string {
+        return Crypto.randomBytes(32).toString('hex');
     }
 
     async createAuth(email: string, password: string, clubName: string, phoneNumber: string) {
@@ -33,10 +40,12 @@ class ClubAuthService {
             transaction = await sequelize.transaction();
 
             const passwordHash = await hashPassword(password);
+            const verificationToken = this.generateVerificationToken();
 
-            await ClubAuthPersistence.createAuth(email, passwordHash.toString(), transaction);
-
+            await ClubAuthPersistence.createAuth(email, passwordHash.toString(), verificationToken, transaction);
             await this.clubService.createUser(email, clubName, phoneNumber, transaction);
+
+            await MailService.sendClubEmailVerification(email, clubName, verificationToken);
 
             await transaction.commit();
         } catch (err) {
@@ -52,19 +61,37 @@ class ClubAuthService {
         }
     }
 
+    async verifyEmail(token: string): Promise<boolean> {
+        const auth = await ClubAuthPersistence.verifyEmail(token);
+        if (!auth) {
+            throw new GenericException({
+                status: HTTP_STATUS.BAD_REQUEST,
+                message: "Invalid verification token",
+                internalStatus: "INVALID_TOKEN"
+            });
+        }
+        return true;
+    }
+
     login = async (email: string, password: string) => {
         const userAuth = await ClubAuthPersistence.getAuthByEmail(email);
         if (!userAuth) throw new NotFoundException('User');
 
         if (!await validatePassword(password, userAuth.password!)) throw new NotFoundException('User');
 
+        // Check if email is verified
+        if (!userAuth.isVerified) {
+            throw new GenericException({
+                status: HTTP_STATUS.FORBIDDEN,
+                message: "Please verify your email address before logging in",
+                internalStatus: "EMAIL_NOT_VERIFIED"
+            });
+        }
+
         const user = await ClubPersistence.getClubByEmail(email);
         if (!user) throw new NotFoundException('User');
-        // const userDetail = await UserPersistence.getUserDetailById(user.id.toString());
-        // if (!userDetail) throw new NotFoundException('User');
 
         const accessToken = this.signAccessToken(user.id.toString(), userAuth.email);
-
         return accessToken;
     }
 
