@@ -55,14 +55,14 @@ export class MailService {
     }
 
     public static async sendClubReservationRefund(user: string, reservationId: number, field: string, date: string, amount: number) {
-        const subject = "Cancelamos la reserva que solicitaste";
+        const subject = "Aviso de cancelacion de reserva";
 
         const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "La reserva en la cancha nombre: " + field + " para la fecha "+ date +" fue cancelada con exito." +
+            message: "La reserva en la cancha nombre: " + field + " para la fecha "+ date +" fue cancelada." +
                 "Como el usuario ya habia abonado la reserva le devolvimos $" + amount + ".",
             clickme: "Ver reservas",
             url: joinUrl
