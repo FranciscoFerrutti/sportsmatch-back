@@ -43,7 +43,6 @@ class ReservationsService {
     private async getAndValidateEventOwnership(eventId: number, userId: string): Promise<IEventDetailDto> {
         const event = await this.eventsService.getEventById(eventId.toString());
 
-        console.log(`Event owner ID: ${event.owner.id.toString()}. User ID: ${userId}`)
         if (!event) {
             throw new NotFoundException("Event");
         }
