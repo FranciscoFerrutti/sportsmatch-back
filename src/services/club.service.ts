@@ -44,10 +44,18 @@ class ClubService {
 
         if (!club) {
             console.warn("⚠️ Club no encontrado con ID:", id);
-            throw new Error("Club no encontrado"); // Manejo de error
+            throw new Error("Club no encontrado");
         }
 
-        return club;
+        const clubData = club.toJSON() as any;
+        const location= club.location?.locality;
+
+        const response = {
+            ...clubData,
+            location
+        };
+
+        return response;
     }
 
 
