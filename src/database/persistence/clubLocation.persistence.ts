@@ -13,6 +13,7 @@ class ClubLocationPersistence {
         latitude: number,
         longitude: number,
         address: string,
+        locality: string,
         transaction?: Transaction
     ): Promise<ClubLocation> {
 
@@ -22,13 +23,13 @@ class ClubLocationPersistence {
 
         if (existingLocation) {
             await existingLocation.update(
-                { geohash: geohashString, address, latitude, longitude },
+                { geohash: geohashString, address, latitude, longitude, locality },
                 { transaction }
             );
             return existingLocation;
         } else {
             const newLocation = await ClubLocation.create(
-                { club_id: clubId, geohash: geohashString, address, latitude, longitude },
+                { club_id: clubId, geohash: geohashString, address, latitude, longitude, locality },
                 { transaction }
             );
             return newLocation;

@@ -74,8 +74,8 @@ class ClubService {
         // }
     // }
 
-    public async updateLocation(userId: number, latitude: number, longitude: number, address: string): Promise<void> {
-        const newLocation = ClubLocationPersistence.UpdateClubLocation(userId, latitude, longitude, address);
+    public async updateLocation(userId: number, latitude: number, longitude: number, address: string, locality: string): Promise<void> {
+        const newLocation = ClubLocationPersistence.UpdateClubLocation(userId, latitude, longitude, address, locality);
     }
 
     public async getLocs(): Promise<any> {

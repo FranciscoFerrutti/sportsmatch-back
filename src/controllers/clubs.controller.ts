@@ -94,16 +94,17 @@ class ClubsController{
         latitude: Joi.number().required(),
         longitude: Joi.number().required(),
         address: Joi.string().required(),
+        locality: Joi.string().required()
     }))
     @HttpRequestInfo("/clubs/:clubId/location", HTTP_METHODS.PUT)
     public async updateLocation(req: Request, res: Response, next: NextFunction) {
         const userIdPath = Number(req.params.clubId);
-        const { latitude, longitude, address } = req.body;
+        const { latitude, longitude, address, locality } = req.body;
         const userId = Number(req.user.id);
 
         try {
             if (userIdPath !== userId) throw new Error("User can't update another user");
-            await this.clubService.updateLocation(userId, latitude, longitude, address);
+            await this.clubService.updateLocation(userId, latitude, longitude, address, locality);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
