@@ -51,6 +51,7 @@ class EventsService {
             }
         } else if (event.organizerType === OrganizerType.CLUB) {
             const club = await ClubPersistence.getClubById(event.ownerId.toString());
+            event.location = club?.name + ' - ' + club?.location?.locality || event.location;
             if (!club) {
                 throw new NotFoundException('Club owner not found');
             }
