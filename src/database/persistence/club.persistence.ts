@@ -30,6 +30,14 @@ class ClubPersistence {
         });
         return club;
     }
+
+    static async updateClub(clubId: string, updateData: Partial<Club>, transaction?: Transaction): Promise<void> {
+
+        await Club.update(updateData, {
+            where: { id: clubId },
+            transaction,
+        });
+    }
 }
 
 export default ClubPersistence;
