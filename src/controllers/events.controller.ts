@@ -171,6 +171,90 @@ class EventsController {
         }
     }
 
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                    properties: {
+                        success: {
+                            type: "boolean"
+                        },
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            "401": {
+                description: "Unauthorized",
+                schema: {
+                    type: "object",
+                    properties: {
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            "404": {
+                description: "Not Found",
+                schema: {
+                    type: "object",
+                    properties: {
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            }
+        })
+        .parameters([
+            {
+                name: "eventId",
+                in: HTTP_PARAMETERS.PATH,
+                description: "Event ID",
+                required: true,
+                type: "number"
+            },
+            {
+                name: "x-auth-type",
+                in: HTTP_PARAMETERS.HEADER,
+                description: "Authentication type (user or club)",
+                required: true,
+                type: "string"
+            },
+            {
+                name: "Authorization",
+                in: HTTP_PARAMETERS.HEADER,
+                description: "JWT token",
+                required: true,
+                type: "string"
+            }
+        ])
+    .build())
+    @validateParams(Joi.object({
+        eventId: Joi.number().min(1).required()
+    }))
+    @HttpRequestInfo("/events/{eventId}", HTTP_METHODS.DELETE)
+    public async deleteEvent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const eventId = req.params.eventId;
+            const userId = req.user?.id.toString();
+            const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
+            
+            const result = await this.eventsService.deleteEvent(eventId, userId, organizerType);
+            
+            res.status(HTTP_STATUS.OK).send({
+                success: result,
+                message: 'Event deleted successfully'
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     // TODO: get owner id from validator
     @document(SwaggerEndpointBuilder.create()
         .responses({

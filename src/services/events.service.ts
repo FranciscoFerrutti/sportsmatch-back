@@ -10,6 +10,7 @@ import EventSearchDtoMapper from "../mapper/eventSearchDto.mapper";
 import {OrganizerType} from "../constants/event.constants";
 import UserPersistence from "../database/persistence/user.persistence";
 import ClubPersistence from "../database/persistence/club.persistence";
+import UnauthorizedException from "../exceptions/unauthorized.exception";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -67,6 +68,22 @@ class EventsService {
         duration?: number;
     }): Promise<Event> {
         return await EventPersistence.updateEvent(eventId, updateData);
+    }
+
+    public async deleteEvent(eventId: string, userId: string, organizerType: OrganizerType): Promise<boolean> {
+        const event = await EventPersistence.getEventById(eventId);
+        
+        if (!event) {
+            throw new NotFoundException('Event not found');
+        }
+
+        // Check if the user is the owner of the event
+        if (event.ownerId.toString() !== userId || event.organizerType !== organizerType) {
+            throw new UnauthorizedException('You are not authorized to delete this event');
+        }
+
+        const result = await EventPersistence.deleteEvent(eventId);
+        return result > 0;
     }
 }
 

@@ -231,6 +231,14 @@ class EventPersistence {
     static async getEventByIdWithParticipants(id: string): Promise<Event | null > {
         return await Event.findOne({ where: { id: id }, include: { model: Participant, attributes: ['userId', 'status'] }});
     }
+
+    static async deleteEvent(eventId: string): Promise<number> {
+        return await Event.destroy({
+            where: {
+                id: eventId
+            }
+        });
+    }
 }
 
 export default EventPersistence;
