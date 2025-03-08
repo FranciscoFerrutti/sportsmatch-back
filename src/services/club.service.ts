@@ -49,7 +49,10 @@ class ClubService {
         }
 
         const clubData = club.toJSON() as any;
-        const location= club.location?.locality;
+        const location = {
+            address: club.location?.address,
+            locality: club.location?.locality
+        };
 
         const response = {
             ...clubData,
