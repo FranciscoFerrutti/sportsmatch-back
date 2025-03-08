@@ -8,6 +8,7 @@ import IClubDto from "../dto/club.dto";
 import User from "../database/models/User.model";
 import UserLocationPersistence from "../database/persistence/userLocation.persistence";
 import ClubLocationPersistence from "../database/persistence/clubLocation.persistence";
+import Club from "../database/models/Club.model";
 
 const default_radius = 5;
 
@@ -31,9 +32,10 @@ class ClubService {
         email: string,
         name: string,
         phone_number: string,
+        description: string,
         transaction: Transaction
     ): Promise<void> {
-        await ClubPersistence.createClub({ email, name, phone_number}, transaction);
+        await ClubPersistence.createClub({ email, name, phone_number, description}, transaction);
     }
 
 
@@ -52,10 +54,36 @@ class ClubService {
 
 
 
-    public async updateClub(userId: string, phoneNumber?: string, location?: string): Promise<void> {
-        // if (phoneNumber) await this.updatePhoneNumber(userId, phoneNumber);
-        // if (location) await this.updateLocation(userId, location);
+    public async updateClub(clubId: string, updateData: { description?: string; imageUrl?: string }): Promise<void> {
+        try {
+            console.log(`🔄 Actualizando club ID: ${clubId} con datos:`, updateData);
+
+            if (!updateData.description && !updateData.imageUrl) {
+                console.warn("⚠️ No se proporcionaron datos para actualizar.");
+                throw new Error("Debe proporcionar al menos un campo para actualizar.");
+            }
+
+            const club = await ClubPersistence.getClubById(clubId);
+            if (!club) {
+                console.error(`❌ No se encontró el club con ID: ${clubId}`);
+                throw new Error("Club no encontrado.");
+            }
+
+            const updateFields: Partial<Club> = {};
+            if (updateData.description !== undefined) updateFields.description = updateData.description;
+            if (updateData.imageUrl !== undefined) updateFields.image_url = updateData.imageUrl;
+
+            await ClubPersistence.updateClub(clubId, updateFields);
+
+            console.log("✅ Club actualizado correctamente:", updateFields);
+        } catch (error) {
+            console.error("❌ Error al actualizar club:", error);
+            throw new Error("Error al actualizar club.");
+        }
     }
+
+
+
 
     // private async updatePhoneNumber(userId: string, phone_number: string): Promise<User> {
         // try {

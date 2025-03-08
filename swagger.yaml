@@ -135,13 +135,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-
   /clubs:
     get:
       tags:
         - Clubs
-      summary: Obtener todos los clubs
-      description: Retorna una lista de todos los clubs disponibles.
+      summary: Obtener clubs con filtros opcionales
+      description: Obtiene una lista de todos los clubs disponibles. Se pueden aplicar filtros opcionales.
+      parameters:
+        - name: clubId
+          in: query
+          schema:
+            type: integer
+          description: Filtra por un ID de club específico.
+        - name: location
+          in: query
+          schema:
+            type: string
+          description: Filtra por ubicación del club.
+        - name: radius
+          in: query
+          schema:
+            type: number
+            description: Radio de búsqueda en kilómetros (aplica solo si se usa `location`).
       responses:
         '200':
           description: Lista de clubs obtenida con éxito.
@@ -159,39 +174,20 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /clubs/{clubId}:
-    parameters:
-      - name: clubId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del club a obtener.
-    get:
-      tags:
-        - Clubs
-      summary: Obtener detalles de un club
-      description: Retorna la información de un club específico por su ID.
-      responses:
-        '200':
-          description: Información del club obtenida con éxito.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Club'
-        '404':
-          description: Club no encontrado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
     put:
       tags:
         - Clubs
-      summary: Actualizar un club
-      description: Actualiza los detalles de un club existente. Requiere autenticación del administrador del club.
+      summary: Actualizar información de un club
+      description: Permite modificar datos de un club. Requiere autenticación.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: clubId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del club a actualizar.
       requestBody:
         required: true
         content:
@@ -206,7 +202,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Club'
         '403':
-          description: Acceso denegado.
+          description: No autorizado para actualizar este club.
           content:
             application/json:
               schema:
@@ -219,20 +215,20 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /clubs/{clubId}/location:
-    parameters:
-      - name: clubId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del club a actualizar.
     put:
       tags:
         - Clubs
       summary: Actualizar ubicación de un club
-      description: Actualiza la ubicación de un club específico. Requiere autenticación del administrador del club.
+      description: Permite modificar la ubicación de un club. Requiere autenticación.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: clubId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del club a actualizar.
       requestBody:
         required: true
         content:
@@ -247,7 +243,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Club'
         '403':
-          description: Acceso denegado.
+          description: No autorizado para actualizar la ubicación de este club.
           content:
             application/json:
               schema:
@@ -259,52 +255,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /clubs/nearby/{location}:
-    parameters:
-      - name: location
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Nombre de la ubicación a buscar.
-      - name: radius
-        in: query
-        schema:
-          type: integer
-          description: Radio de búsqueda en kilómetros. Si no se especifica, se utiliza un valor predeterminado.
-    get:
-      tags:
-        - Clubs
-      summary: Obtener clubs cercanos
-      description: Obtiene una lista de clubs cercanos a una ubicación específica.
-      responses:
-        '200':
-          description: Lista de clubs cercanos obtenida con éxito.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ClubNearby'
-        '400':
-          description: Error en la solicitud.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /events:
     get:
       tags:
         - Events
-      summary: Obtener una lista de eventos
-      description: Retorna una lista de eventos, con filtros opcionales.
+      summary: Obtener eventos con filtros opcionales
+      description: Retorna una lista de eventos con filtros como deporte, usuario, ubicación y más.
       parameters:
         - name: participantId
           in: query
           schema:
             type: integer
-          description: Filtrar eventos en los que participa el usuario.
+          description: Filtrar eventos en los que participa un usuario.
         - name: sportId
           in: query
           schema:
@@ -339,13 +301,13 @@ paths:
           in: query
           schema:
             type: integer
-            default: 1
+            default: 0
           description: Número de página para paginación.
         - name: limit
           in: query
           schema:
             type: integer
-            default: 10
+            default: 20
           description: Número de elementos por página.
       responses:
         '200':
@@ -353,7 +315,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedEventResponse'
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
         '400':
           description: Error en la solicitud.
           content:
@@ -364,7 +335,7 @@ paths:
     post:
       tags:
         - Events
-      summary: Crear un evento
+      summary: Crear un nuevo evento
       description: Crea un nuevo evento deportivo. Requiere autenticación.
       security:
         - BearerAuth: [ ]
@@ -380,7 +351,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Event'
+                type: object
+                properties:
+                  eventId:
+                    type: integer
         '400':
           description: Datos inválidos.
           content:
@@ -395,18 +369,18 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /events/{eventId}:
-    parameters:
-      - name: eventId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del evento
     get:
       tags:
         - Events
       summary: Obtener detalles de un evento
       description: Retorna los detalles de un evento específico por su ID.
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento
       responses:
         '200':
           description: Detalles del evento obtenidos con éxito.
@@ -420,47 +394,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-    put:
+
+  /fields:
+    get:
       tags:
-        - Events
-      summary: Actualizar detalles de un evento
-      description: Permite actualizar los detalles de un evento.
-      security:
-        - BearerAuth: [ ]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EventUpdate'
+        - Fields
+      summary: Obtener todas las canchas con filtro opcional
+      description: Devuelve una lista de todas las canchas registradas. Se puede filtrar por `clubId`.
+      parameters:
+        - name: clubId
+          in: query
+          schema:
+            type: integer
+          description: Filtrar canchas por club.
       responses:
         '200':
-          description: Evento actualizado con éxito.
+          description: Lista de canchas obtenida con éxito.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Event'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Field'
         '400':
           description: Error en la solicitud.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Acceso denegado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Evento no encontrado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-
-  /fields:
     post:
       tags:
         - Fields
@@ -480,7 +442,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Field'
+                type: object
+                properties:
+                  id:
+                    type: integer
         '400':
           description: Datos inválidos.
           content:
@@ -494,50 +459,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /fields/{clubId}:
-    parameters:
-      - name: clubId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del club.
+  /fields/{fieldId}:
     get:
       tags:
         - Fields
-      summary: Listar canchas de un club
-      description: Obtiene una lista de todas las canchas asociadas a un club específico.
+      summary: Obtener detalles de una cancha
+      description: Retorna la información de una cancha específica por su ID.
+      parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la cancha.
       responses:
         '200':
-          description: Lista de canchas obtenida con éxito.
+          description: Información de la cancha obtenida con éxito.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Field'
+                $ref: '#/components/schemas/Field'
         '404':
-          description: Club no encontrado.
+          description: Cancha no encontrada.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /fields/{fieldId}:
-    parameters:
-      - name: fieldId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID de la cancha.
     put:
       tags:
         - Fields
       summary: Actualizar una cancha
-      description: Actualiza los detalles de una cancha específica.
+      description: Actualiza los detalles de una cancha específica. Requiere autenticación del administrador del club.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la cancha a actualizar.
       requestBody:
         required: true
         content:
@@ -574,11 +536,18 @@ paths:
       tags:
         - Fields
       summary: Eliminar una cancha
-      description: Elimina una cancha específica.
+      description: Elimina una cancha específica. Requiere autenticación del administrador del club.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la cancha a eliminar.
       responses:
-        '200':
+        '204':
           description: Cancha eliminada con éxito.
         '403':
           description: Acceso denegado.
@@ -633,20 +602,60 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /events/{eventId}/participants:
-    parameters:
-      - name: eventId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del evento
+    get:
+      tags:
+        - Participants
+      summary: Obtener participantes de un evento
+      description: Lista a todos los participantes de un evento específico, con opción de filtrar por estado.
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ accepted, pending ]
+          description: Filtrar participantes por estado.
+      responses:
+        '200':
+          description: Lista de participantes obtenida con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+        '400':
+          description: Error en la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Evento no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     post:
       tags:
         - Participants
       summary: Agregar participante a un evento
-      description: Agrega un usuario como participante en un evento.
+      description: Agrega un usuario como participante en un evento. Solo los usuarios autenticados pueden agregarse.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento
       requestBody:
         required: true
         content:
@@ -659,38 +668,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParticipantResponse'
+                $ref: '#/components/schemas/Participant'
         '400':
-          description: ID de usuario no válido.
+          description: ID de usuario no válido o usuario no autorizado.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Evento no encontrado.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-    get:
-      tags:
-        - Participants
-      summary: Obtener participantes de un evento
-      description: Lista a todos los participantes de un evento específico.
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [ accepted, pending ]
-            description: Estado de los participantes a filtrar.
-      responses:
-        '200':
-          description: Lista de participantes obtenida con éxito.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ParticipantListResponse'
         '404':
           description: Evento no encontrado.
           content:
@@ -698,32 +682,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /events/{eventId}/participants/{participantId}:
-    parameters:
-      - name: eventId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del evento
-      - name: participantId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del participante
     delete:
       tags:
         - Participants
       summary: Eliminar un participante de un evento
-      description: Elimina un participante de un evento.
+      description: Permite a un usuario o administrador eliminar a un participante de un evento.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del participante a eliminar
       responses:
         '200':
           description: Participante eliminado exitosamente.
         '400':
-          description: El usuario no es el propietario del evento o no es un participante válido.
+          description: Error en la solicitud.
           content:
             application/json:
               schema:
@@ -734,13 +717,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
     put:
       tags:
         - Participants
       summary: Actualizar estado de un participante
-      description: Actualiza el estado de participación de un usuario en un evento.
+      description: Permite al dueño del evento actualizar el estado de participación de un usuario.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del participante a actualizar
       requestBody:
         required: true
         content:
@@ -767,14 +764,161 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /reservations/event/{eventId}/available:
-    parameters:
-      - name: eventId
-        in: path
+  /payments/{reservationId}/process_payment:
+    post:
+      tags:
+        - Payments
+      summary: Procesar un pago
+      description: Procesa un pago para una reserva. Solo el dueño del evento puede pagar.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la reserva a pagar.
+      requestBody:
         required: true
-        schema:
-          type: integer
-        description: ID del evento
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Pago procesado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Error en la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No autorizado para realizar el pago.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: La reserva ya tiene un pago aprobado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /payments/{reservationId}:
+    get:
+      tags:
+        - Payments
+      summary: Obtener pagos de una reserva
+      description: Retorna la lista de pagos asociados a una reserva.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la reserva.
+      responses:
+        '200':
+          description: Lista de pagos obtenida con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '403':
+          description: No autorizado para ver estos pagos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reserva no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /payments/club/{reservationId}/status:
+    get:
+      tags:
+        - Payments
+      summary: Obtener estado de pago para un club
+      description: Devuelve el estado del pago y los detalles del propietario del evento.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la reserva.
+      responses:
+        '200':
+          description: Estado del pago obtenido con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatus'
+        '403':
+          description: Acceso no autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reserva no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /payments/{paymentId}/refund:
+    post:
+      tags:
+        - Payments
+      summary: Reembolsar un pago
+      description: Procesa el reembolso de un pago específico.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del pago a reembolsar.
+      responses:
+        '200':
+          description: Reembolso procesado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '404':
+          description: Pago no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error procesando el reembolso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations/event/{eventId}/available:
     get:
       tags:
         - Reservations
@@ -783,16 +927,22 @@ paths:
       security:
         - BearerAuth: [ ]
       parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento.
         - name: radius
           in: query
           schema:
             type: number
-            description: Radio de búsqueda en kilómetros
+          description: Radio de búsqueda en kilómetros.
         - name: maxResults
           in: query
           schema:
             type: integer
-            description: Número máximo de resultados a devolver
+          description: Número máximo de resultados a devolver.
       responses:
         '200':
           description: Lista de franjas horarias disponibles.
@@ -810,13 +960,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /reservations/event/{eventId}:
-    parameters:
-      - name: eventId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del evento
     post:
       tags:
         - Reservations
@@ -824,6 +967,13 @@ paths:
       description: Crea una reserva para un evento especificado.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento.
       requestBody:
         required: true
         content:
@@ -857,6 +1007,13 @@ paths:
       description: Devuelve todas las reservas asociadas a un evento.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento.
       responses:
         '200':
           description: Lista de reservas del evento.
@@ -874,13 +1031,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /reservations/{reservationId}/status:
-    parameters:
-      - name: reservationId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID de la reserva
     patch:
       tags:
         - Reservations
@@ -888,6 +1038,13 @@ paths:
       description: Permite a un club actualizar el estado de una reserva.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la reserva.
       requestBody:
         required: true
         content:
@@ -914,31 +1071,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /reservations/{reservationId}:
-    parameters:
-      - name: reservationId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID de la reserva
-    delete:
-      tags:
-        - Reservations
-      summary: Cancelar una reserva
-      description: Cancela una reserva específica.
-      security:
-        - BearerAuth: [ ]
-      responses:
-        '204':
-          description: Reserva cancelada exitosamente.
-        '404':
-          description: Reserva no encontrada.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /reservations:
     get:
       tags:
@@ -953,7 +1085,7 @@ paths:
           schema:
             type: string
             enum: [ PENDING, CONFIRMED, CANCELLED ]
-            description: Filtrar reservas por estado
+          description: Filtrar reservas por estado.
       responses:
         '200':
           description: Lista de reservas del club.
@@ -970,14 +1102,82 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /reservations/{reservationId}:
+    delete:
+      tags:
+        - Reservations
+      summary: Cancelar una reserva
+      description: Cancela una reserva específica.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la reserva.
+      responses:
+        '204':
+          description: Reserva cancelada exitosamente.
+        '404':
+          description: Reserva no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Reservations
+      summary: Obtener detalles de una reserva
+      description: Devuelve los detalles de una reserva, incluyendo información del propietario.
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la reserva.
+      responses:
+        '200':
+          description: Detalles de la reserva obtenidos con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationWithOwner'
+        '404':
+          description: Reserva no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /sports:
+    get:
+      tags:
+        - Sports
+      summary: Obtener todos los deportes
+      description: Devuelve una lista de todos los deportes disponibles en la plataforma.
+      responses:
+        '200':
+          description: Lista de deportes obtenida con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sport'
+        '404':
+          description: No se encontraron deportes disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /fields/{fieldId}/availability:
-    parameters:
-      - name: fieldId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del campo
     post:
       tags:
         - TimeSlots
@@ -985,6 +1185,13 @@ paths:
       description: Agrega nuevas franjas horarias para un campo específico.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del campo.
       requestBody:
         required: true
         content:
@@ -1017,12 +1224,18 @@ paths:
       summary: Obtener franjas horarias de un campo
       description: Recupera todas las franjas horarias para un campo, con filtros opcionales.
       parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del campo.
         - name: availabilityDate
           in: query
           schema:
             type: string
             format: date
-            description: Fecha para filtrar las franjas horarias
+          description: Fecha para filtrar las franjas horarias.
         - name: slotStatus
           in: query
           schema:
@@ -1032,16 +1245,16 @@ paths:
           schema:
             type: string
             format: time
-            description: Hora de inicio para filtrar
+          description: Hora de inicio para filtrar.
         - name: endTime
           in: query
           schema:
             type: string
             format: time
-            description: Hora de fin para filtrar
+          description: Hora de fin para filtrar.
       responses:
         '200':
-          description: Lista de franjas horarias.
+          description: Lista de franjas horarias obtenida con éxito.
           content:
             application/json:
               schema:
@@ -1054,33 +1267,32 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /fields/{fieldId}/availability/available:
-    parameters:
-      - name: fieldId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del campo
     get:
       tags:
         - TimeSlots
       summary: Obtener franjas horarias disponibles
       description: Devuelve todas las franjas horarias disponibles para un rango de fechas.
       parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del campo.
         - name: startDate
           in: query
           required: true
           schema:
             type: string
             format: date
-            description: Fecha de inicio del rango
+          description: Fecha de inicio del rango.
         - name: endDate
           in: query
           required: true
           schema:
             type: string
             format: date
-            description: Fecha de fin del rango
+          description: Fecha de fin del rango.
       responses:
         '200':
           description: Lista de franjas horarias disponibles.
@@ -1096,19 +1308,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /fields/{fieldId}/availability/{slotId}:
-    parameters:
-      - name: fieldId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del campo
-      - name: slotId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del slot
     delete:
       tags:
         - TimeSlots
@@ -1116,6 +1315,19 @@ paths:
       description: Elimina una franja horaria específica de un campo.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del campo.
+        - name: slotId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la franja horaria.
       responses:
         '204':
           description: Slot eliminado exitosamente.
@@ -1133,19 +1345,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /fields/{fieldId}/availability/{slotId}/status:
-    parameters:
-      - name: fieldId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del campo
-      - name: slotId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del slot
     patch:
       tags:
         - TimeSlots
@@ -1153,6 +1352,19 @@ paths:
       description: Permite actualizar el estado de una franja horaria específica.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del campo.
+        - name: slotId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de la franja horaria.
       requestBody:
         required: true
         content:
@@ -1200,18 +1412,18 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /users/{userId}:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del usuario
     get:
       tags:
         - Users
       summary: Obtener detalles de un usuario
       description: Recupera los detalles de un usuario específico por su ID.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
       responses:
         '200':
           description: Detalles del usuario obtenidos con éxito.
@@ -1233,6 +1445,13 @@ paths:
       description: Permite actualizar detalles del usuario como teléfono, ubicaciones y deportes.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
       requestBody:
         required: true
         content:
@@ -1260,13 +1479,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /users/{userId}/rating:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del usuario a calificar
     post:
       tags:
         - Users
@@ -1274,6 +1486,13 @@ paths:
       description: Permite calificar a un usuario después de un evento.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario a calificar.
       requestBody:
         required: true
         content:
@@ -1301,13 +1520,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   /users/{userId}/image:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: ID del usuario
     get:
       tags:
         - Users
@@ -1315,6 +1527,13 @@ paths:
       description: Recupera una URL pre-firmada para descargar la imagen de perfil del usuario.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
       responses:
         '200':
           description: URL pre-firmada obtenida con éxito.
@@ -1336,6 +1555,13 @@ paths:
       description: Recupera una URL pre-firmada para subir una nueva imagen de perfil para el usuario.
       security:
         - BearerAuth: [ ]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
       responses:
         '200':
           description: URL pre-firmada obtenida con éxito.
@@ -1360,336 +1586,104 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    # User Related Schemas
-    BaseUser:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID del usuario
-        email:
-          type: string
-          format: email
-          description: Correo electrónico del usuario
-        firstName:
-          type: string
-          description: Nombre del usuario
-        lastName:
-          type: string
-          description: Apellido del usuario
-        phoneNumber:
-          type: string
-          description: Número de teléfono del usuario
-
-    User:
-      allOf:
-        - $ref: '#/components/schemas/BaseUser'
-        - type: object
-          properties:
-            locations:
-              type: array
-              items:
-                type: string
-              description: Ubicaciones preferidas del usuario
-            sports:
-              type: array
-              items:
-                type: integer
-              description: IDs de deportes preferidos
-            rating:
-              type: number
-              format: float
-              description: Calificación promedio del usuario
-            imageUrl:
-              type: string
-              description: URL de la imagen de perfil del usuario
-
     UserCreate:
       type: object
-      required:
-        - email
-        - password
-        - firstName
-        - lastName
-        - phoneNumber
-        - birthdate
       properties:
         email:
           type: string
           format: email
-          description: Correo electrónico del usuario
         password:
           type: string
           format: password
-          description: Contraseña del usuario
         firstName:
           type: string
-          description: Nombre del usuario
         lastName:
           type: string
-          description: Apellido del usuario
         phoneNumber:
           type: string
-          description: Número de teléfono del usuario
-        birthdate:
-          type: string
-          format: date
-          description: Fecha de nacimiento del usuario
-
-    UserUpdate:
-      type: object
-      properties:
-        phoneNumber:
-          type: string
-          description: Nuevo número de teléfono
-        locations:
-          type: array
-          items:
-            type: string
-          description: Nuevas ubicaciones del usuario
-        sports:
-          type: array
-          items:
-            type: integer
-          description: Nuevos deportes del usuario
-
-    UserRating:
-      type: object
-      required:
-        - rating
-        - eventId
-      properties:
-        rating:
-          type: integer
-          minimum: 1
-          maximum: 5
-          description: Calificación (1-5)
-          example: 5
-        eventId:
-          type: integer
-          description: ID del evento asociado
-          example: 123
-
-    UserImage:
-      type: object
-      properties:
-        presignedGetUrl:
-          type: string
-          description: URL pre-firmada para descargar la imagen
-
-    UserImageUpload:
-      type: object
-      properties:
-        presignedPutUrl:
-          type: string
-          description: URL pre-firmada para subir la imagen
-
-    UserList:
-      type: array
-      items:
-        $ref: '#/components/schemas/BaseUser'
-
-    # Club Related Schemas
     Club:
       type: object
       properties:
         id:
           type: integer
-          description: ID del club
         name:
           type: string
-          description: Nombre del club
         email:
           type: string
           format: email
-          description: Correo electrónico del club
         phoneNumber:
           type: string
-          description: Número de teléfono del club
-        location:
-          type: string
-          description: Ubicación del club
-
-    ClubLocation:
-      type: object
-      required:
-        - latitude
-        - longitude
-        - address
-      properties:
-        latitude:
-          type: number
-          description: Latitud de la ubicación
-        longitude:
-          type: number
-          description: Longitud de la ubicación
-        address:
-          type: string
-          description: Dirección completa
-
-    ClubUpdate:
-      type: object
-      required:
-        - phoneNumber
-      properties:
-        phoneNumber:
-          type: string
-          description: Número de teléfono del club
-        location:
-          type: string
-          description: Ubicación del club
-
-    ClubNearby:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID del club
-        name:
-          type: string
-          description: Nombre del club
-        distance:
-          type: number
-          description: Distancia al club en kilómetros
-
     ClubCreate:
       type: object
-      required:
-        - email
-        - password
-        - name
-        - phoneNumber
       properties:
         email:
           type: string
           format: email
-          description: Correo electrónico del club
         password:
           type: string
           format: password
-          description: Contraseña del club
         name:
           type: string
-          description: Nombre del club
         phoneNumber:
           type: string
-          description: Número de teléfono del club
-
-    # Field Related Schemas
-    Field:
+    ClubUpdate:
       type: object
       properties:
-        id:
-          type: integer
-          description: ID de la cancha
+        phoneNumber:
+          type: string
+          description: Nuevo número de teléfono del club
         name:
           type: string
-          description: Nombre de la cancha
-        cost:
-          type: number
-          description: Costo por minuto de uso
-        description:
-          type: string
-          description: Descripción de la cancha
-        capacity:
-          type: integer
-          description: Capacidad máxima de personas
-        slot_duration:
-          type: integer
-          description: Duración de cada franja horaria en minutos
-        sportIds:
-          type: array
-          items:
-            type: integer
-          description: IDs de los deportes permitidos en la cancha
-
-    FieldCreate:
-      type: object
-      required:
-        - name
-        - cost
-        - description
-        - capacity
-        - slot_duration
-        - sportIds
-      properties:
-        name:
-          type: string
-          description: Nombre de la cancha
-          example: Cancha de Fútbol
-        cost:
-          type: number
-          description: Costo por minuto de uso
-          example: 10
-        description:
-          type: string
-          description: Breve descripción de la cancha
-          example: Cancha techada con césped sintético
-        capacity:
-          type: number
-          description: Capacidad máxima de personas
-          example: 20
-        slot_duration:
-          type: number
-          description: Duración de cada franja horaria en minutos
-          example: 60
-        sportIds:
-          type: array
-          items:
-            type: integer
-          description: ID(s) de los deportes asociados a la cancha
-          example: [ 1 ]
-
-    FieldUpdate:
+          description: Nuevo nombre del club
+    ClubLocation:
       type: object
       properties:
-        name:
+        latitude:
+          type: number
+          format: float
+          description: Latitud de la ubicación del club
+        longitude:
+          type: number
+          format: float
+          description: Longitud de la ubicación del club
+        address:
           type: string
-          description: Nuevo nombre de la cancha
-        cost:
-          type: number
-          description: Nuevo costo por minuto
-        description:
+          description: Dirección del club
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
           type: string
-          description: Nueva descripción de la cancha
-        capacity:
-          type: number
-          description: Nueva capacidad de la cancha
-        slot_duration:
-          type: number
-          description: Nueva duración de las franjas horarias
-
-    # Event Related Schemas
+    ClubAuthResponse:
+      type: object
+      properties:
+        club:
+          $ref: '#/components/schemas/Club'
+        token:
+          type: string
     Event:
       type: object
       properties:
         id:
           type: integer
-          description: ID del evento
         sportId:
           type: integer
-          description: ID del deporte asociado
         expertise:
           type: string
-          description: Nivel de experiencia requerido
         schedule:
           type: string
           format: date-time
-          description: Fecha y hora del evento
         location:
           type: string
-          description: Ubicación del evento
         remaining:
           type: integer
-          description: Cupos restantes
         duration:
           type: integer
-          description: Duración del evento en minutos
         description:
           type: string
           maxLength: 100
-          description: Descripción breve del evento
-
     EventCreate:
       type: object
       required:
@@ -1703,224 +1697,97 @@ components:
       properties:
         sportId:
           type: integer
-          description: ID del deporte del evento
         expertise:
           type: string
-          description: Nivel de experiencia requerido
         schedule:
           type: string
           format: date-time
-          description: Fecha y hora del evento
         location:
           type: string
-          description: Ubicación del evento
         remaining:
           type: integer
-          description: Cupos restantes
         duration:
           type: integer
-          description: Duración del evento en minutos
         description:
           type: string
           maxLength: 100
-          description: Descripción breve del evento
 
-    EventUpdate:
+    Field:
       type: object
-      required:
-        - sportId
-        - location
-        - schedule
-        - duration
-        - description
       properties:
-        sportId:
+        id:
           type: integer
-          description: ID del deporte asociado
-        location:
+        name:
           type: string
-          description: Nueva ubicación del evento
-        schedule:
-          type: string
-          format: date-time
-          description: Nueva fecha y hora del evento
-        duration:
-          type: integer
-          description: Nueva duración del evento en minutos
         description:
           type: string
-          description: Nueva descripción del evento
-
-    EventFilters:
-      type: object
-      properties:
-        participantId:
-          type: integer
-          description: Filtrar eventos en los que participa el usuario
-        sportId:
-          type: integer
-          description: Filtrar eventos por deporte
-        userId:
-          type: integer
-          description: Filtrar eventos creados por un usuario específico
-        location:
-          type: string
-          description: Filtrar eventos por ubicación
-        expertise:
-          type: string
-          description: Filtrar eventos por nivel de experiencia
-        schedule:
-          type: string
-          description: Filtrar eventos por horario
-        date:
-          type: string
-          description: Filtrar eventos por fecha
-
-    # TimeSlot Related Schemas
-    TimeSlot:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID del slot
-        fieldId:
-          type: integer
-          description: ID del campo
-        availabilityDate:
-          type: string
-          format: date
-          description: Fecha de disponibilidad
-        startTime:
-          type: string
-          format: time
-          description: Hora de inicio
-        endTime:
-          type: string
-          format: time
-          description: Hora de fin
-        slotStatus:
-          $ref: '#/components/schemas/TimeSlotStatus'
-
-    TimeSlotStatus:
-      type: string
-      enum: [ available, booked, maintenance ]
-      description: Estado posible de una franja horaria
-
-    TimeSlotCreate:
-      type: object
-      required:
-        - availabilityDate
-        - startTime
-        - endTime
-      properties:
-        availabilityDate:
-          type: string
-          format: date
-          description: Fecha de disponibilidad
-          example: "2025-01-01"
-        startTime:
-          type: string
-          format: time
-          description: Hora de inicio
-          example: "10:00"
-        endTime:
-          type: string
-          format: time
-          description: Hora de fin
-          example: "12:00"
-        slotStatus:
-          $ref: '#/components/schemas/TimeSlotStatus'
-          example: "available"
-
-    TimeSlotStatusUpdate:
-      type: object
-      required:
-        - slotStatus
-      properties:
-        slotStatus:
-          $ref: '#/components/schemas/TimeSlotStatus'
-          example: "maintenance"
-
-    TimeSlotFilters:
-      type: object
-      properties:
-        availabilityDate:
-          type: string
-          format: date
-          description: Fecha para filtrar las franjas horarias
-        slotStatus:
-          $ref: '#/components/schemas/TimeSlotStatus'
-        startTime:
-          type: string
-          format: time
-          description: Hora de inicio para filtrar
-        endTime:
-          type: string
-          format: time
-          description: Hora de fin para filtrar
-
-    TimeSlotList:
-      type: array
-      items:
-        $ref: '#/components/schemas/TimeSlot'
-
-    TimeSlotAvailableList:
-      type: array
-      items:
-        $ref: '#/components/schemas/TimeSlot'
-      description: Lista de franjas horarias disponibles
-
-    # Reservation Related Schemas
-    Reservation:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID de la reserva
-        eventId:
-          type: integer
-          description: ID del evento asociado
-        fieldId:
-          type: integer
-          description: ID de la cancha
-        status:
-          type: string
-          enum: [ PENDING, CONFIRMED, CANCELLED ]
-          description: Estado de la reserva
         cost:
           type: number
-          description: Costo total
-        timeSlots:
+        capacity:
+          type: integer
+        slot_duration:
+          type: integer
+        sports:
           type: array
           items:
-            $ref: '#/components/schemas/TimeSlot'
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+        club_id:
+          type: integer
 
-    # Auth Related Schemas
-    AuthResponse:
+    FieldCreate:
       type: object
+      required:
+        - name
+        - cost
+        - description
+        - capacity
+        - slot_duration
+        - sportIds
       properties:
-        user:
-          $ref: '#/components/schemas/User'
-        token:
+        name:
           type: string
-          description: Token de acceso JWT
-
-    ClubAuthResponse:
-      type: object
-      properties:
-        club:
-          $ref: '#/components/schemas/Club'
-        token:
+        cost:
+          type: number
+        description:
           type: string
-          description: Token de acceso JWT
+        capacity:
+          type: integer
+        slot_duration:
+          type: integer
+        sportIds:
+          type: array
+          items:
+            type: integer
 
-    # Health Related Schemas
+    FieldUpdate:
+        type: object
+        properties:
+          name:
+            type: string
+          cost:
+            type: number
+          description:
+            type: string
+          capacity:
+            type: integer
+          slot_duration:
+            type: integer
+          sports:
+            type: array
+            items:
+              type: integer
+
     HealthResponse:
       type: object
       properties:
         status:
           type: string
-          enum: [OK, ERROR]
+          enum: [ OK, ERROR ]
           description: Estado del servicio
         message:
           type: string
@@ -1930,7 +1797,27 @@ components:
           format: date-time
           description: Marca de tiempo de la verificación
 
-      # Participant Related Schemas
+    Participant:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del participante
+        userId:
+          type: integer
+          description: ID del usuario participante
+        eventId:
+          type: integer
+          description: ID del evento
+        status:
+          type: string
+          enum: [ accepted, pending ]
+          description: Estado de la participación
+        joinedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora cuando se unió al evento
+
     ParticipantCreate:
       type: object
       required:
@@ -1940,26 +1827,15 @@ components:
           type: integer
           description: ID del usuario a agregar como participante
 
-    Participant:
+    ParticipantUpdate:
       type: object
+      required:
+        - status
       properties:
-        id:
-          type: integer
-          description: ID de la participación
-        userId:
-          type: integer
-          description: ID del usuario participante
-        eventId:
-          type: integer
-          description: ID del evento
         status:
           type: string
-          enum: [accepted, pending]
-          description: Estado de la participación
-        joinedAt:
-          type: string
-          format: date-time
-          description: Fecha y hora cuando se unió al evento
+          enum: [ accepted, rejected ]
+          description: Nuevo estado de la participación
 
     ParticipantResponse:
       allOf:
@@ -1968,7 +1844,6 @@ components:
           properties:
             user:
               $ref: '#/components/schemas/User'
-              description: Datos del usuario participante
 
     ParticipantListResponse:
       type: object
@@ -1981,56 +1856,102 @@ components:
           items:
             $ref: '#/components/schemas/ParticipantResponse'
 
-    ParticipantUpdate:
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        reservationId:
+          type: integer
+        transactionAmount:
+          type: number
+        transactionStatus:
+          type: string
+          enum: [ APPROVED, REJECTED, PENDING ]
+        transactionDate:
+          type: string
+          format: date-time
+
+    PaymentRequest:
       type: object
       required:
-        - status
+        - transaction_amount
       properties:
-        status:
-          type: string
-          enum: [accepted, rejected]
-          description: Nuevo estado de la participación
+        transaction_amount:
+          type: number
+          description: Monto de la transacción.
 
-    # Field Availability Related Schemas
-    FieldAvailability:
+    PaymentStatus:
       type: object
       properties:
+        reservationId:
+          type: integer
+        isPaid:
+          type: boolean
+        paymentDate:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        owner:
+          type: object
+          properties:
+            name:
+              type: string
+            phoneNumber:
+              type: string
+
+    Refund:
+      type: object
+      properties:
+        refundId:
+          type: integer
+        paymentId:
+          type: integer
+        dateCreated:
+          type: string
+          format: date-time
+        amountRefunded:
+          type: number
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID de la reserva.
+        eventId:
+          type: integer
+          description: ID del evento asociado.
         fieldId:
           type: integer
-          description: ID de la cancha
-        fieldName:
+          description: ID de la cancha reservada.
+        status:
           type: string
-          description: Nombre de la cancha
-        clubId:
-          type: integer
-          description: ID del club
-        clubName:
-          type: string
-          description: Nombre del club
-        distance:
+          enum: [ PENDING, CONFIRMED, CANCELLED, COMPLETED ]
+          description: Estado de la reserva.
+        cost:
           type: number
-          description: Distancia al evento en kilómetros
-        availableSlots:
+          description: Costo total de la reserva.
+        timeSlots:
           type: array
           items:
             $ref: '#/components/schemas/TimeSlot'
-          description: Lista de franjas horarias disponibles
 
-    # Reservation Related Schemas
     ReservationCreate:
       type: object
       required:
         - fieldId
-        - timeSlotIds
+        - slotIds
       properties:
         fieldId:
           type: integer
-          description: ID de la cancha a reservar
-        timeSlotIds:
+          description: ID de la cancha a reservar.
+        slotIds:
           type: array
           items:
             type: integer
-          description: IDs de las franjas horarias a reservar
+          description: IDs de las franjas horarias a reservar.
 
     ReservationStatusUpdate:
       type: object
@@ -2039,51 +1960,251 @@ components:
       properties:
         status:
           type: string
-          enum: [CONFIRMED, CANCELLED]
-          description: Nuevo estado de la reserva
+          enum: [ CONFIRMED, CANCELLED ]
+          description: Nuevo estado de la reserva.
 
-    # Common Schemas
-    Pagination:
+    ReservationWithOwner:
       type: object
       properties:
-        page:
+        id:
           type: integer
-          description: Número de página actual
-        pageSize:
+        eventId:
           type: integer
-          description: Elementos por página
-        totalItems:
+        fieldId:
           type: integer
-          description: Total de elementos
-        totalPages:
-          type: integer
-          description: Total de páginas
-
-    PaginatedEventResponse:
-      type: object
-      properties:
-        page:
-          type: integer
-          description: Número de la página actual
-        pageSize:
-          type: integer
-          description: Número de elementos en la página
-        items:
+        status:
+          type: string
+          enum: [ PENDING, CONFIRMED, CANCELLED, COMPLETED ]
+        cost:
+          type: number
+        timeSlots:
           type: array
           items:
-            $ref: '#/components/schemas/Event'
+            $ref: '#/components/schemas/TimeSlot'
+        field:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Nombre de la cancha.
+            clubId:
+              type: integer
+              description: ID del club propietario de la cancha.
+            clubName:
+              type: string
+              description: Nombre del club propietario de la cancha.
+        owner:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: ID del propietario del evento.
+            name:
+              type: string
+              description: Nombre del propietario del evento.
+            phone:
+              type: string
+              description: Teléfono de contacto del propietario.
+
+    FieldAvailability:
+      type: object
+      properties:
+        fieldId:
+          type: integer
+          description: ID de la cancha.
+        fieldName:
+          type: string
+          description: Nombre de la cancha.
+        clubId:
+          type: integer
+          description: ID del club.
+        clubName:
+          type: string
+          description: Nombre del club.
+        distance:
+          type: number
+          description: Distancia al evento en kilómetros.
+        availableSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlot'
+          description: Lista de franjas horarias disponibles.
+
+    Sport:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del deporte.
+        name:
+          type: string
+          description: Nombre del deporte.
+
+    TimeSlot:
+      type: object
+      properties:
+        id:
+          type: integer
+        fieldId:
+          type: integer
+        availabilityDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        slotStatus:
+          $ref: '#/components/schemas/TimeSlotStatus'
+
+    TimeSlotStatus:
+      type: string
+      enum: [ available, booked, maintenance ]
+      description: Estado posible de una franja horaria.
+
+    TimeSlotCreate:
+      type: object
+      required:
+        - availabilityDate
+        - startTime
+        - endTime
+      properties:
+        availabilityDate:
+          type: string
+          format: date
+          description: Fecha de disponibilidad.
+          example: "2025-01-01"
+        startTime:
+          type: string
+          format: time
+          description: Hora de inicio.
+          example: "10:00"
+        endTime:
+          type: string
+          format: time
+          description: Hora de fin.
+          example: "12:00"
+        slotStatus:
+          $ref: '#/components/schemas/TimeSlotStatus'
+
+    TimeSlotStatusUpdate:
+      type: object
+      required:
+        - slotStatus
+      properties:
+        slotStatus:
+          $ref: '#/components/schemas/TimeSlotStatus'
+
+    TimeSlotList:
+      type: array
+      items:
+        $ref: '#/components/schemas/TimeSlot'
+
+    TimeSlotAvailableList:
+      type: array
+      items:
+        $ref: '#/components/schemas/TimeSlot'
+      description: Lista de franjas horarias disponibles.
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del usuario.
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario.
+        firstName:
+          type: string
+          description: Nombre del usuario.
+        lastName:
+          type: string
+          description: Apellido del usuario.
+        phoneNumber:
+          type: string
+          description: Número de teléfono del usuario.
+        locations:
+          type: array
+          items:
+            type: string
+          description: Ubicaciones preferidas del usuario.
+        sports:
+          type: array
+          items:
+            type: integer
+          description: IDs de deportes preferidos.
+        rating:
+          type: number
+          format: float
+          description: Calificación promedio del usuario.
+        imageUrl:
+          type: string
+          description: URL de la imagen de perfil del usuario.
+
+    UserUpdate:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          description: Nuevo número de teléfono.
+        locations:
+          type: array
+          items:
+            type: string
+          description: Nuevas ubicaciones del usuario.
+        sports:
+          type: array
+          items:
+            type: integer
+          description: Nuevos deportes del usuario.
+
+    UserRating:
+      type: object
+      required:
+        - rating
+        - eventId
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Calificación (1-5).
+        eventId:
+          type: integer
+          description: ID del evento asociado.
+
+    UserImage:
+      type: object
+      properties:
+        presignedGetUrl:
+          type: string
+          description: URL pre-firmada para descargar la imagen.
+
+    UserImageUpload:
+      type: object
+      properties:
+        presignedPutUrl:
+          type: string
+          description: URL pre-firmada para subir la imagen.
+
+    UserList:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+
 
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
-          description: Mensaje de error
         status:
           type: integer
-          description: Código de estado HTTP
         details:
           type: array
           items:
             type: string
-          description: Detalles adicionales del error

@@ -23,6 +23,22 @@ class ClubPersistence {
         const club = await Club.findByPk(id);
         return club;
     }
+
+    static async updateClub(clubId: string, updateData: Partial<Club>, transaction?: Transaction): Promise<void> {
+        console.log(`🔄 Actualizando club ${clubId} con datos:`, updateData);
+
+        const [updatedRows] = await Club.update(updateData, {
+            where: { id: clubId },
+            transaction,
+        });
+
+        if (updatedRows === 0) {
+            console.warn(`⚠️ No se encontró el club con ID ${clubId} o no hubo cambios.`);
+            throw new Error("Club no encontrado o sin cambios.");
+        }
+
+        console.log("✅ Club actualizado con éxito.");
+    }
 }
 
 export default ClubPersistence;

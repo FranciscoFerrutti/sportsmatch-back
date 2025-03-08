@@ -17,7 +17,7 @@ class UsersController {
 
     constructor() {
         this.usersService = UsersService.getInstance();
-        // this.awsService = AWSService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -140,7 +140,8 @@ class UsersController {
         const userId = req.user.id;
         
         try {
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid:${userId}`);
+            const contentType = req.headers['content-type'] || 'image/png';
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid:${userId}`,contentType);
             res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
             next(err);

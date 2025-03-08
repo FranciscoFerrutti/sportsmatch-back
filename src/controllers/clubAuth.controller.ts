@@ -19,13 +19,14 @@ class ClubAuthController {
         password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$/).required(),
         name: Joi.string().required(),
         phoneNumber: Joi.string().required(),
+        description: Joi.string().optional().allow("")
     }))
     @HttpRequestInfo("/clubauth", HTTP_METHODS.POST)
     public async createAuth(req: Request, res: Response, next: NextFunction) {
         const email: string = req.body.email;
 
         try {
-            await this.authService.createAuth(email.toLowerCase(), req.body.password, req.body.name, req.body.phoneNumber);
+            await this.authService.createAuth(email.toLowerCase(), req.body.password, req.body.name, req.body.phoneNumber, req.body.description);
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {
             next(err);

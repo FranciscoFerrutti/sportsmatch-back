@@ -79,6 +79,12 @@ class User extends Model<IUserAttributes> {
     })
     declare birthdate: string;
 
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    image_url?: string;
+
     @UpdatedAt
     declare updated_at: Date;
 

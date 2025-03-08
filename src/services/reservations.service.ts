@@ -8,11 +8,12 @@ import NotFoundException from "../exceptions/notFound.exception";
 import GenericException from "../exceptions/generic.exception";
 import {HTTP_STATUS} from "../constants/http.constants";
 import {ReservationStatus} from "../constants/reservation.constants";
-import {SlotStatus} from "../constants/slots.constants";
 import IEventDetailDto from "../dto/eventDetail.dto";
 import TimeSlot from "../database/models/TimeSlot.model";
 import {OrganizerType} from "../constants/event.constants";
 import Reservation from "../database/models/Reservation.model";
+import {MailService} from "./mail.service";
+import {PaymentService} from "./payment.service";
 
 class ReservationsService {
     private static instance: ReservationsService;
@@ -21,6 +22,7 @@ class ReservationsService {
     private readonly fieldsService: FieldsService;
     private readonly timeSlotsService: TimeSlotsService;
     private readonly clubService: ClubService;
+    private paymentService: PaymentService;
 
     private constructor() {
         this.reservationPersistence = new ReservationPersistence();
@@ -28,6 +30,7 @@ class ReservationsService {
         this.fieldsService = FieldsService.getInstance();
         this.timeSlotsService = TimeSlotsService.getInstance();
         this.clubService = ClubService.getInstance();
+        this.paymentService = PaymentService.getInstance(this);
     }
 
     public static getInstance(): ReservationsService {
@@ -39,6 +42,7 @@ class ReservationsService {
 
     private async getAndValidateEventOwnership(eventId: number, userId: string): Promise<IEventDetailDto> {
         const event = await this.eventsService.getEventById(eventId.toString());
+
         if (!event) {
             throw new NotFoundException("Event");
         }
@@ -110,18 +114,14 @@ class ReservationsService {
         const transaction = await this.reservationPersistence.startTransaction();
         
         try {
-            // Validate event ownership
-            await this.getAndValidateEventOwnership(eventId, userId);
+            const event = await this.getAndValidateEventOwnership(eventId, userId);
 
-            // Get and lock the slots in a single operation
             const slots = await this.timeSlotsService.checkAndLockSlots(slotIds, transaction);
             this.validateSlots(slots, fieldId);
 
-            // Calculate total cost
             const field = await this.fieldsService.getFieldById(fieldId.toString());
             const totalCost = slots.length * field.cost_per_slot;
 
-            // Create reservation
             const reservation = await this.reservationPersistence.createReservation(
                 {
                     eventId,
@@ -134,6 +134,8 @@ class ReservationsService {
             );
 
             await transaction.commit();
+            await MailService.sendReservationSubmit(event.owner.email, reservation.field.club.name, event.schedule);
+            await MailService.sendClubReservationSubmit(reservation.field?.club?.email, reservation.field?.name, event.schedule);
             return await this.mapToReservationDetail(reservation);
 
         } catch (error) {
@@ -170,15 +172,12 @@ class ReservationsService {
             status
         );
 
-        // If the reservation is confirmed, update the event details
         if (status === ReservationStatus.CONFIRMED) {
-            // Get club location
             const clubLocation = await this.reservationPersistence.findClubLocationByReservation(reservationId);
             if (!clubLocation) {
                 throw new NotFoundException("Club location");
             }
 
-            // Get time slots for the reservation
             const timeSlots = await this.timeSlotsService.findTimeSlotsByReservation(reservationId);
             if (!timeSlots || timeSlots.length === 0) {
                 throw new NotFoundException("Time slots");
@@ -186,20 +185,19 @@ class ReservationsService {
 
             const firstSlot = timeSlots[0];
 
-            // Calculate total duration based on number of slots and slot duration
             const totalDuration = timeSlots.length * firstSlot.field.slot_duration;
 
-            // Combine availability_date and start_time for the correct schedule
             const scheduleDate = new Date(firstSlot.availability_date);
             const [hours, minutes] = firstSlot.start_time.toString().split(':');
-            scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            scheduleDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-            // Update event with new details
             await this.eventsService.updateEventById(updatedReservation.eventId.toString(), {
                 location: clubLocation.address,
                 schedule: scheduleDate,
                 duration: totalDuration
             });
+
+            await MailService.sendReservationConfirmed(updatedReservation.event.userOwner.email, reservationId, reservation.field?.club?.name, scheduleDate.toString());
         }
 
         return this.mapToReservationDetail(updatedReservation);
@@ -210,7 +208,8 @@ class ReservationsService {
         organizerType: OrganizerType,
         userId: number
     ): Promise<void> {
-        const reservation = await this.findReservation(reservationId)
+        const reservation = await this.findReservationWithOwnerDetails(reservationId);
+        const reservationStatus = reservation.status
 
         if (organizerType === OrganizerType.CLUB) {
             await this.checkFieldOwnership(reservation.field?.club?.id, userId);
@@ -232,7 +231,23 @@ class ReservationsService {
                 transaction
             );
 
+            const now = new Date();
+            const scheduleDate = new Date(reservation.event.schedule);
+            const timeDifference = scheduleDate.getTime() - now.getTime();
+            const hoursUntilReservation = (timeDifference / (1000 * 60 * 60)) + 3;
+            
+            if (reservationStatus == ReservationStatus.COMPLETED && (organizerType === OrganizerType.CLUB  || hoursUntilReservation >= 24) ) {
+                const refund = await this.paymentService.refundPayment(reservationId);
+                await MailService.sendUserReservationRefund(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.toString(), refund.amountRefunded);
+                await MailService.sendClubReservationRefund(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.toString(), refund.amountRefunded);
+
+            } else {
+                await MailService.sendUserReservationDeclined(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.toString());
+                console.log("Reservation is less than 24 hours away and organizer is a user. No refund.");
+            }
+
             await transaction.commit();
+
         } catch (error) {
             await transaction.rollback();
             throw error;
