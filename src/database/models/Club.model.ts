@@ -21,6 +21,7 @@ export interface IClubAttributes {
     name: string;
     phone_number: string;
     email: string;
+    description?: string;
     locations?: ClubLocation[];
 }
 @Table({
