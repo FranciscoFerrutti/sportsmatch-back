@@ -8,6 +8,7 @@ import { document } from "../utils/swaggerDocumentation/annotations";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 import { ParticipantStatus } from "../database/models/Participant.model";
 import { OrganizerType } from "../constants/event.constants";
+import { HTTP_PARAMETERS } from "../constants/http.constants";
 
 @autobind
 class EventsController {
@@ -38,6 +39,85 @@ class EventsController {
                 }
             }
         })
+        .parameters([
+            {
+                name: "participantId",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by participant ID",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "sportId",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by sport ID",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "userId",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by user ID",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "organizerType",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by organizer type (user or club)",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "filterOut",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter out results",
+                required: false,
+                type: "boolean"
+            },
+            {
+                name: "location",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by location",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "expertise",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by expertise level",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "schedule",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by schedule",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "date",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by date (YYYY-MM-DD)",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "page",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Page number",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "limit",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Results per page",
+                required: false,
+                type: "number"
+            }
+        ])
     .build())
     @validateQuery(Joi.object({
         participantId: Joi.number().min(1).optional(),
@@ -48,6 +128,7 @@ class EventsController {
         expertise: Joi.string().optional(),
         schedule: Joi.string().optional(),
         date: Joi.string().optional(),
+        organizerType: JoiEnum(OrganizerType).optional(),
         page: Joi.number().min(0).optional(),
         limit: Joi.number().min(1).optional()
     }))
