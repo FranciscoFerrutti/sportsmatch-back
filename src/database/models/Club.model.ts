@@ -14,7 +14,6 @@ export interface IClubDetail {
     name: string;
     phone_number: string;
     email: string;
-    description?: string;
     locations: string[];
 }
 export interface IClubAttributes {
@@ -22,7 +21,6 @@ export interface IClubAttributes {
     name: string;
     phone_number: string;
     email: string;
-    description?: string;
     locations?: ClubLocation[];
 }
 @Table({
@@ -55,13 +53,6 @@ export default class Club extends Model<IClubAttributes> {
 
     @Column(DataType.STRING)
     description?: string;
-
-    @Column({
-        type: DataType.STRING,
-        allowNull: true,
-    })
-    image_url?: string;
-
 
     @HasOne(() => ClubLocation)
     location!: ClubLocation;

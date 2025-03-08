@@ -2,6 +2,7 @@ import { Transaction } from "sequelize";
 import sequelize from "../connection";
 import Club, {IClubAttributes} from "../models/Club.model";
 import User from "../models/User.model";
+import ClubLocation from "../models/ClubLocation.model";
 
 class ClubPersistence {
     static async createClub(user: IClubAttributes, transaction: Transaction): Promise<Club> {
@@ -20,24 +21,14 @@ class ClubPersistence {
     }
 
     static async getClubById(id: string): Promise<Club | null> {
-        const club = await Club.findByPk(id);
-        return club;
-    }
-
-    static async updateClub(clubId: string, updateData: Partial<Club>, transaction?: Transaction): Promise<void> {
-        console.log(`🔄 Actualizando club ${clubId} con datos:`, updateData);
-
-        const [updatedRows] = await Club.update(updateData, {
-            where: { id: clubId },
-            transaction,
+        const club = await Club.findByPk(id, {
+            include: [{
+                model: ClubLocation,
+                attributes: ['locality'],
+                required: false
+            }]
         });
-
-        if (updatedRows === 0) {
-            console.warn(`⚠️ No se encontró el club con ID ${clubId} o no hubo cambios.`);
-            throw new Error("Club no encontrado o sin cambios.");
-        }
-
-        console.log("✅ Club actualizado con éxito.");
+        return club;
     }
 }
 

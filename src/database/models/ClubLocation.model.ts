@@ -29,6 +29,9 @@ export default class ClubLocation extends Model {
     @Column(DataType.STRING(256))
     address!: string;
 
+    @Column(DataType.STRING(256))
+    locality!: string;
+
     @Column(DataType.DECIMAL)
     latitude!: number;
 

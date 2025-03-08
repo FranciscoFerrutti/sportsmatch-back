@@ -13,6 +13,7 @@ class ClubLocationPersistence {
         latitude: number,
         longitude: number,
         address: string,
+        locality: string,
         transaction?: Transaction
     ): Promise<ClubLocation> {
 
@@ -22,13 +23,13 @@ class ClubLocationPersistence {
 
         if (existingLocation) {
             await existingLocation.update(
-                { geohash: geohashString, address, latitude, longitude },
+                { geohash: geohashString, address, latitude, longitude, locality },
                 { transaction }
             );
             return existingLocation;
         } else {
             const newLocation = await ClubLocation.create(
-                { club_id: clubId, geohash: geohashString, address, latitude, longitude },
+                { club_id: clubId, geohash: geohashString, address, latitude, longitude, locality },
                 { transaction }
             );
             return newLocation;
@@ -42,14 +43,14 @@ class ClubLocationPersistence {
 
     static async getNearLocations(location: string, radius: number): Promise<ClubLocation[]> {
         const { latitude, longitude } = LOCATION_COORDINATES[location];
-        
+
         // Calculate the bounding box for the given radius
         const kmPerLat = 111.32; // Approximate km per degree of latitude
         const kmPerLon = Math.cos(this.toRadians(latitude)) * 111.32;
-        
+
         const latChange = radius / kmPerLat;
         const lonChange = radius / kmPerLon;
-        
+
         const minLat = latitude - latChange;
         const maxLat = latitude + latChange;
         const minLon = longitude - lonChange;
