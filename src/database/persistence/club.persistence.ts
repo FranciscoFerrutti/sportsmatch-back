@@ -1,7 +1,5 @@
 import { Transaction } from "sequelize";
-import sequelize from "../connection";
 import Club, {IClubAttributes} from "../models/Club.model";
-import User from "../models/User.model";
 import ClubLocation from "../models/ClubLocation.model";
 
 class ClubPersistence {
@@ -24,7 +22,7 @@ class ClubPersistence {
         const club = await Club.findByPk(id, {
             include: [{
                 model: ClubLocation,
-                attributes: ['locality'],
+                attributes: ['locality', 'address'],
                 required: false
             }]
         });

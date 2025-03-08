@@ -1,12 +1,5 @@
-import GenericException from "../exceptions/generic.exception";
 import ClubPersistence from "../database/persistence/club.persistence";
-import NotFoundException from "../exceptions/notFound.exception";
-import { Transaction, ValidationErrorItem } from "sequelize";
-import { HTTP_STATUS } from "../constants/http.constants";
-import ClubDtoMapper from "../mapper/ClubDto.mapper";
-import IClubDto from "../dto/club.dto";
-import User from "../database/models/User.model";
-import UserLocationPersistence from "../database/persistence/userLocation.persistence";
+import { Transaction } from "sequelize";
 import ClubLocationPersistence from "../database/persistence/clubLocation.persistence";
 
 const default_radius = 5;
@@ -49,10 +42,12 @@ class ClubService {
 
         const clubData = club.toJSON() as any;
         const location= club.location?.locality;
+        const address= club.location?.address;
 
         const response = {
             ...clubData,
-            location
+            location,
+            address
         };
 
         return response;
