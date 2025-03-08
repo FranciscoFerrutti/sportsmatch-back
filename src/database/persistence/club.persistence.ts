@@ -24,7 +24,7 @@ class ClubPersistence {
         const club = await Club.findByPk(id, {
             include: [{
                 model: ClubLocation,
-                attributes: ['locality'],
+                attributes: ['address', 'locality'],
                 required: false
             }]
         });

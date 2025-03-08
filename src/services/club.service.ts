@@ -40,7 +40,6 @@ class ClubService {
 
 
     public async getClubById(id: string): Promise<any> {
-        console.log("🔍 Buscando club con ID:", id);
 
         const club = await ClubPersistence.getClubById(id);
 
