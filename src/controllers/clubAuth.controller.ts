@@ -33,6 +33,19 @@ class ClubAuthController {
         }
     }
 
+    @validateBody(Joi.object({
+        token: Joi.string().required()
+    }))
+    @HttpRequestInfo("/clubauth/verify", HTTP_METHODS.POST)
+    public async verifyEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            await this.authService.verifyEmail(req.body.token);
+            res.status(HTTP_STATUS.OK).send({ message: "Email verified successfully" });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     @HttpRequestInfo("/clubauth", HTTP_METHODS.GET)
     public async login(req: Request, res: Response, next: NextFunction) {
         try {

@@ -48,7 +48,7 @@ class FieldService{
     }
 
     public async getAllFields(): Promise<any> {
-        const fields = await FieldPersistence.getAllFields(); // Nuevo método en el modelo
+        const fields = await FieldPersistence.getAllFields(); 
         console.log("📢 Datos obtenidos de la BD en getAllFields:", JSON.stringify(fields, null, 2));
 
         return fields?.map(field => ({
@@ -62,7 +62,8 @@ class FieldService{
                 id: sport.id,
                 name: sport.name
             })) || [],
-            club_id: field.club_id
+            club_id: field.club_id,
+            location: field.club?.location?.locality
         })) || [];
     }
 

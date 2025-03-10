@@ -41,7 +41,7 @@ class EventPersistence {
         events.sport_id,
         events.organizer_type,
         events.duration,
-        (events.remaining - COUNT(participants.id))::integer AS remaining,
+        (events.remaining - COUNT(CASE WHEN participants.status = true THEN participants.id ELSE NULL END))::integer AS remaining,
         CASE 
             WHEN events.organizer_type = '${OrganizerType.USER}' THEN users.firstname
             ELSE NULL
@@ -84,6 +84,9 @@ class EventPersistence {
 
         const userId = queryFilters.userId?.toString().trim();
         if (userId !== undefined) queryBuilder.addFilter(`events.owner_id ${filterOut ? "!" : ""}= ${userId}`);
+
+        const organizerType = queryFilters.organizerType?.toString().trim();
+        if (organizerType !== undefined) queryBuilder.addFilter(`events.organizer_type = '${organizerType}'`);
 
         const participantId = queryFilters.participantId?.toString().trim();
         if (participantIdFilter) queryBuilder.addFilter(`participants.user_id ${filterOut ? "!" : ""}= ${participantId}`);
@@ -215,6 +218,7 @@ class EventPersistence {
         location?: string;
         schedule?: Date;
         duration?: number;
+        description?: string;
     }): Promise<Event> {
         const event = await Event.findByPk(eventId);
         if (!event) {
@@ -227,6 +231,14 @@ class EventPersistence {
 
     static async getEventByIdWithParticipants(id: string): Promise<Event | null > {
         return await Event.findOne({ where: { id: id }, include: { model: Participant, attributes: ['userId', 'status'] }});
+    }
+
+    static async deleteEvent(eventId: string): Promise<number> {
+        return await Event.destroy({
+            where: {
+                id: eventId
+            }
+        });
     }
 }
 

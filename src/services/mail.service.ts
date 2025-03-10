@@ -55,14 +55,14 @@ export class MailService {
     }
 
     public static async sendClubReservationRefund(user: string, reservationId: number, field: string, date: string, amount: number) {
-        const subject = "Cancelamos la reserva que solicitaste";
+        const subject = "Aviso de cancelacion de reserva";
 
         const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "La reserva en la cancha nombre: " + field + " para la fecha "+ date +" fue cancelada con exito." +
+            message: "La reserva en la cancha nombre: " + field + " para la fecha "+ date +" fue cancelada." +
                 "Como el usuario ya habia abonado la reserva le devolvimos $" + amount + ".",
             clickme: "Ver reservas",
             url: joinUrl
@@ -164,6 +164,25 @@ export class MailService {
         await this.sendMail(user, subject, html);
     }
     //-----------------------
+
+    //EMAIL VERIFICATION
+    public static async sendClubEmailVerification(email: string, clubName: string, verificationToken: string) {
+        const subject = "Verifica tu email - SportsMatch";
+
+        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const template = HandleBars.compile(emailTemplateSource);
+
+        const joinUrl = FRONTEND_URI + `/verify-email?token=${verificationToken}`;
+        const html = template({
+            message: "¡Bienvenido a SportsMatch " + clubName + "! " +
+                "Para completar tu registro, por favor verifica tu dirección de email haciendo click en el botón de abajo. ",
+            clickme: "Verificar Email",
+            url: joinUrl
+        });
+
+        await this.sendMail(email, subject, html);
+    }
+
     public static async sendMail(to: string | string[], subject: string, html: string) {
         const transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,

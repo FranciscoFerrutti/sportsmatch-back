@@ -23,5 +23,7 @@ export default class EventsRoutes {
         this.router.post('/', authMiddleware, this.controller.createEvent);
         this.router.use('/:eventId/participants', new ParticipantsRoutes().router);
         this.router.get('/:eventId', this.controller.getEventById);
+        this.router.patch('/:eventId', authMiddleware, this.controller.updateEvent);
+        this.router.delete('/:eventId', authMiddleware, this.controller.deleteEvent);
     }
 }

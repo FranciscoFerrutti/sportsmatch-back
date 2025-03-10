@@ -10,6 +10,8 @@ import EventSearchDtoMapper from "../mapper/eventSearchDto.mapper";
 import {OrganizerType} from "../constants/event.constants";
 import UserPersistence from "../database/persistence/user.persistence";
 import ClubPersistence from "../database/persistence/club.persistence";
+import UnauthorizedException from "../exceptions/unauthorized.exception";
+import {Datetime} from "aws-sdk/clients/costoptimizationhub";
 
 class EventsService {
     private static readonly instance: EventsService;
@@ -51,6 +53,7 @@ class EventsService {
             }
         } else if (event.organizerType === OrganizerType.CLUB) {
             const club = await ClubPersistence.getClubById(event.ownerId.toString());
+            event.location = club?.name + ' - ' + club?.location?.locality || event.location;
             if (!club) {
                 throw new NotFoundException('Club owner not found');
             }
@@ -60,12 +63,93 @@ class EventsService {
         return await EventPersistence.createEvent(event);
     }
 
+    public async updateEvent(eventId: string, userId: string, organizerType: OrganizerType, updateData: {
+        schedule?: string; // Time in format HH:MM
+        description?: string;
+    }): Promise<Event> {
+        const event = await EventPersistence.getEventById(eventId);
+        
+        if (!event) {
+            throw new NotFoundException('Event not found');
+        }
+
+        // Check if the user is the owner of the event
+        if (event.ownerId.toString() !== userId || event.organizerType !== organizerType) {
+            throw new UnauthorizedException('You are not authorized to update this event');
+        }
+
+        const updates: any = {};
+        
+        // If description is provided, update it
+        if (updateData.description) {
+            if(event.description !== " ") {
+                updates.description = event.description + ". En cancha: " + updateData.description;
+            } else {
+                updates.description = "En cancha: " + updateData.description;
+            }
+        }
+        
+        // If schedule time is provided, update only the time part while preserving the date
+        if (updateData.schedule) {
+            try {
+                // Get the current date from the event's schedule
+                const currentDate = new Date(event.schedule);
+                
+                if (isNaN(currentDate.getTime())) {
+                    throw new Error('Current event schedule is invalid');
+                }
+                
+                // Parse the time string
+                const [hours, minutes] = updateData.schedule.split(':').map(Number);
+                
+                // Create a new date object with the same date but updated time
+                const newDate = new Date(
+                    currentDate.getFullYear(),
+                    currentDate.getMonth(),
+                    currentDate.getDate(),
+                    hours,
+                    minutes,
+                    0,
+                    0
+                );
+                
+                if (isNaN(newDate.getTime())) {
+                    throw new Error('Generated date is invalid');
+                }
+                
+                updates.schedule = newDate.toISOString();
+            } catch (error) {
+                console.error('Error updating schedule:', error);
+                throw new Error('Invalid date format');
+            }
+        }
+
+        // Update the event in the database
+        return await EventPersistence.updateEvent(eventId, updates);
+    }
+
     public async updateEventById(eventId: string, updateData: {
         location?: string;
         schedule?: Date;
         duration?: number;
     }): Promise<Event> {
         return await EventPersistence.updateEvent(eventId, updateData);
+    }
+
+    public async deleteEvent(eventId: string, userId: string, organizerType: OrganizerType): Promise<boolean> {
+        const event = await EventPersistence.getEventById(eventId);
+        
+        if (!event) {
+            throw new NotFoundException('Event not found');
+        }
+
+        // Check if the user is the owner of the event
+        if (event.ownerId.toString() !== userId || event.organizerType !== organizerType) {
+            throw new UnauthorizedException('You are not authorized to delete this event');
+        }
+
+        const result = await EventPersistence.deleteEvent(eventId);
+        return result > 0;
     }
 }
 

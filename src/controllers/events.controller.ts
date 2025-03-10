@@ -8,6 +8,7 @@ import { document } from "../utils/swaggerDocumentation/annotations";
 import { SwaggerEndpointBuilder } from "../utils/swaggerDocumentation/SwaggerEndpointBuilder";
 import { ParticipantStatus } from "../database/models/Participant.model";
 import { OrganizerType } from "../constants/event.constants";
+import { HTTP_PARAMETERS } from "../constants/http.constants";
 
 @autobind
 class EventsController {
@@ -38,6 +39,85 @@ class EventsController {
                 }
             }
         })
+        .parameters([
+            {
+                name: "participantId",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by participant ID",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "sportId",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by sport ID",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "userId",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by user ID",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "organizerType",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by organizer type (user or club)",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "filterOut",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter out results",
+                required: false,
+                type: "boolean"
+            },
+            {
+                name: "location",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by location",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "expertise",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by expertise level",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "schedule",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by schedule",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "date",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Filter by date (YYYY-MM-DD)",
+                required: false,
+                type: "string"
+            },
+            {
+                name: "page",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Page number",
+                required: false,
+                type: "number"
+            },
+            {
+                name: "limit",
+                in: HTTP_PARAMETERS.QUERY,
+                description: "Results per page",
+                required: false,
+                type: "number"
+            }
+        ])
     .build())
     @validateQuery(Joi.object({
         participantId: Joi.number().min(1).optional(),
@@ -48,6 +128,7 @@ class EventsController {
         expertise: Joi.string().optional(),
         schedule: Joi.string().optional(),
         date: Joi.string().optional(),
+        organizerType: JoiEnum(OrganizerType).optional(),
         page: Joi.number().min(0).optional(),
         limit: Joi.number().min(1).optional()
     }))
@@ -85,6 +166,182 @@ class EventsController {
         try {
             const event = await this.eventsService.getEventById(eventId);
             res.status(HTTP_STATUS.OK).send(event);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                    properties: {
+                        success: {
+                            type: "boolean"
+                        },
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            "401": {
+                description: "Unauthorized",
+                schema: {
+                    type: "object",
+                    properties: {
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            "404": {
+                description: "Not Found",
+                schema: {
+                    type: "object",
+                    properties: {
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            }
+        })
+        .parameters([
+            {
+                name: "eventId",
+                in: HTTP_PARAMETERS.PATH,
+                description: "Event ID",
+                required: true,
+                type: "number"
+            },
+            {
+                name: "x-auth-type",
+                in: HTTP_PARAMETERS.HEADER,
+                description: "Authentication type (user or club)",
+                required: true,
+                type: "string"
+            },
+            {
+                name: "Authorization",
+                in: HTTP_PARAMETERS.HEADER,
+                description: "JWT token",
+                required: true,
+                type: "string"
+            }
+        ])
+    .build())
+    @validateParams(Joi.object({
+        eventId: Joi.number().min(1).required()
+    }))
+    @validateBody(Joi.object({
+        schedule: Joi.string().optional().description('Time in format HH:MM'),
+        description: Joi.string().max(100).optional()
+    }))
+    @HttpRequestInfo("/events/{eventId}", HTTP_METHODS.PATCH)
+    public async updateEvent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const eventId = req.params.eventId;
+            const userId = req.user?.id.toString();
+            const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
+            const { schedule, description } = req.body;
+            
+            const result = await this.eventsService.updateEvent(eventId, userId, organizerType, {
+                schedule,
+                description
+            });
+            
+            res.status(HTTP_STATUS.OK).send({
+                success: true,
+                message: 'Event updated successfully'
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    @document(SwaggerEndpointBuilder.create()
+        .responses({
+            "200": {
+                description: "OK",
+                schema: {
+                    type: "object",
+                    properties: {
+                        success: {
+                            type: "boolean"
+                        },
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            "401": {
+                description: "Unauthorized",
+                schema: {
+                    type: "object",
+                    properties: {
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            "404": {
+                description: "Not Found",
+                schema: {
+                    type: "object",
+                    properties: {
+                        message: {
+                            type: "string"
+                        }
+                    }
+                }
+            }
+        })
+        .parameters([
+            {
+                name: "eventId",
+                in: HTTP_PARAMETERS.PATH,
+                description: "Event ID",
+                required: true,
+                type: "number"
+            },
+            {
+                name: "x-auth-type",
+                in: HTTP_PARAMETERS.HEADER,
+                description: "Authentication type (user or club)",
+                required: true,
+                type: "string"
+            },
+            {
+                name: "Authorization",
+                in: HTTP_PARAMETERS.HEADER,
+                description: "JWT token",
+                required: true,
+                type: "string"
+            }
+        ])
+    .build())
+    @validateParams(Joi.object({
+        eventId: Joi.number().min(1).required()
+    }))
+    @HttpRequestInfo("/events/{eventId}", HTTP_METHODS.DELETE)
+    public async deleteEvent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const eventId = req.params.eventId;
+            const userId = req.user?.id.toString();
+            const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
+            
+            const result = await this.eventsService.deleteEvent(eventId, userId, organizerType);
+            
+            res.status(HTTP_STATUS.OK).send({
+                success: result,
+                message: 'Event deleted successfully'
+            });
         } catch (err) {
             next(err);
         }
