@@ -218,6 +218,7 @@ class EventPersistence {
         location?: string;
         schedule?: Date;
         duration?: number;
+        description?: string;
     }): Promise<Event> {
         const event = await Event.findByPk(eventId);
         if (!event) {
