@@ -41,7 +41,7 @@ class EventPersistence {
         events.sport_id,
         events.organizer_type,
         events.duration,
-        (events.remaining - COUNT(participants.id))::integer AS remaining,
+        (events.remaining - COUNT(CASE WHEN participants.status = true THEN participants.id ELSE NULL END))::integer AS remaining,
         CASE 
             WHEN events.organizer_type = '${OrganizerType.USER}' THEN users.firstname
             ELSE NULL
