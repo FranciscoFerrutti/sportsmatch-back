@@ -1,67 +1,89 @@
-# SportsMatch App
+# SportsMatch Backend
 
-A sports matching application developed by Gastón De Schant, Agustin Naso, and Brittany Lin.
+Este repositorio contiene el código fuente del backend de **SportsMatch**, desarrollado en **Node.js con Express y TypeScript**. Se encarga de gestionar la autenticación, usuarios, reservas, pagos e interacción con la base de datos en **PostgreSQL** a través de **Supabase**.
 
-## About
+## Tecnologías utilizadas
 
-SportsMatch is an application that helps people find sports partners and matches based on their preferences and location.
+- **Node.js + Express**: Framework para la gestión de API REST.
+- **TypeScript**: Tipado fuerte para mejorar la mantenibilidad del código.
+- **PostgreSQL**: Base de datos relacional alojada en Supabase.
+- **Autenticación**: JWT para control de acceso.
+- **Pagos**: Integración con Mercado Pago.
+- **Almacenamiento**: Amazon S3 para imágenes de usuarios.
+- **Correo electrónico**: Envío de notificaciones mediante Gmail.
 
-## Setup
+## Configuración
 
-To run the SportsMatch application, follow these steps:
+Para ejecutar la aplicación localmente, sigue estos pasos:
 
-1. Install the required dependencies using:
+1. **Instalar las dependencias**:
 
-`npm install`
+   ```sh
+   npm install
+   ```
 
-2. Create a `.env` file in the root directory of the project.
+2. **Crear un archivo `.env`** en el directorio raíz del proyecto y configurar las siguientes variables:
 
-3. Configure the following environment variables in the `.env` file:
 
-- `DB_USER`: The username for the database. (e.g., DB_USER=sportsmatch)
-- `DB_HOST`: The host address of the database server. (e.g., DB_HOST=localhost)
-- `DB_NAME`: The name of the database to be used. (e.g., DB_NAME=sportsmatchdb)
-- `DB_PASS`: The password for the database user. (e.g., DB_PASS=password)
-- `DB_PORT`: The port number on which the database server is running. (e.g., DB_PORT=5432)
-- `LAN_HOST`: The local network host address for the application. (e.g., LAN_HOST=192.168.xx.xx)
-- `NAME`: The name of the application. (e.g., NAME=SportsMatch)
-- `PORT`: The port number on which the application will run. (e.g., PORT=8080)
-- `IS_LOCAL`: A boolean value that indicates whether the application is running locally. (e.g., IS_LOCAL=true)
+| Variable                      | Descripción |
+|--------------------------------|------------|
+| `DB_USER`                      | Usuario de la base de datos |
+| `DB_HOST`                      | Dirección del servidor de la base de datos |
+| `DB_NAME`                      | Nombre de la base de datos |
+| `DB_PASS`                      | Contraseña del usuario de la base de datos |
+| `DB_PORT`                      | Puerto en el que corre PostgreSQL |
+| `LAN_HOST`                     | IP local del servidor |
+| `NAME`                         | Nombre de la aplicación |
+| `PORT`                         | Puerto en el que corre el backend |
+| `IS_LOCAL`                     | Indica si el entorno es local (`true` o `false`) |
+| `DB_SSL`                       | Habilita la conexión segura a la base de datos |
+| `MERCADO_PAGO_ACCESS_TOKEN`    | Token de acceso de Mercado Pago |
+| `DATABASE_URL`                 | URL de conexión completa a la base de datos |
+| `MAIL_HOST`                    | Servidor SMTP para correos |
+| `MAIL_USERNAME`                | Usuario de la cuenta de correo |
+| `MAIL_PASSWORD`                | Contraseña de la cuenta de correo |
+| `FRONTEND_URI`                 | URL del frontend |
+| `S3_ACCESS_KEY`                | Clave de acceso a Amazon S3 |
+| `S3_SECRET_KEY`                | Clave secreta de Amazon S3 |
+| `S3_REGION`                    | Región del bucket de Amazon S3 |
+| `S3_BUCKET`                    | Nombre del bucket en Amazon S3 |
 
-## Environment Variable Explanations
+## Ejecución
 
-- `DB_USER`: This is the username that the application will use to authenticate and connect to the database.
+1. **Ejecutar el servidor en modo desarrollo**:
 
-- `DB_HOST`: This is the hostname or IP address of the machine where your database server is running. For local development, it's often set to 'localhost'.
+   ```sh
+   npm run dev
+   ```
 
-- `DB_NAME`: This is the name of the database that the application will use. The application will perform operations within this database.
+2. **Acceder a la API**:
 
-- `DB_PASS`: This is the password associated with the database user specified by `DB_USER`. It's used to authenticate and gain access to the database.
+   El backend estará disponible en:  
+   ```
+   http://localhost:3000
+   ```
 
-- `DB_PORT`: This is the port number on which the database server is listening. PostgreSQL's default port is 5432, but you mentioned 5433 in your configuration.
+3. **Explorar la documentación de la API** (Swagger):
 
-- `LAN_HOST`: This is the local network IP address of the machine where your application will run. This is used to bind the server to a specific network interface. It's important to note that this IP should be reachable within your local network.
+   ```
+   http://localhost:3000/api-docs
+   ```
 
-## Usage
+---
 
-1. Run the application using:
+## Documentación
 
-`npm run dev`
+Puedes encontrar la documentación completa de la API en el archivo [`swagger.yaml`](../swagger.yaml), que describe los endpoints disponibles, parámetros y respuestas esperadas.
 
-2. Access the application using the URL provided in the console.
+---
 
-## Deploy
+## Funcionalidades principales
 
-To deploy the SportsMatch application, follow these steps:
+✅ **Autenticación** de usuarios y clubes mediante JWT  
+✅ **Gestión de reservas** con verificación de disponibilidad  
+✅ **Pagos seguros** con Mercado Pago  
+✅ **Geolocalización** con Geohash para búsqueda de canchas  
+✅ **Envío de emails** con notificaciones de estado de reservas  
+✅ **Almacenamiento en la nube** de imágenes de usuarios en S3  
 
-1. run the following command to create the image:
-
-`docker build . -t sportmatch_img`
-
-2. run the following command to create the container:
-
-`docker run -p 8080:8080 -t sportmatch_img`
-
-## Credits
-
-This application was developed by Gastón De Schant, Agustin Naso, and Brittany Lin.
+---
