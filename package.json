@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "build": "tsc ",
+    "build": "tsc && cp -r src/services/templates dist/services/",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest --coverage",
