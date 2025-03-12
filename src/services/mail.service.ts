@@ -151,7 +151,7 @@ export class MailService {
     public static async sendClubReservationSubmit(user: string, field: string, date: string) {
         const subject = "Tenes una nueva solicitud de reserva";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/reservations`;
