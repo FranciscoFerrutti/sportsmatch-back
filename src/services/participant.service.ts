@@ -73,6 +73,10 @@ class ParticipantService {
 
         return participantsDtos;
     }
+
+    public async existParticipant(eventId: string, participantId: string): Promise<boolean>{
+        return await ParticipantPersistence.getParticipant(eventId, participantId);
+    }
 }
 
 export default ParticipantService;
