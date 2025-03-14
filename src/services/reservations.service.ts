@@ -195,7 +195,7 @@ class ReservationsService {
             scheduleDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0);
 
             await this.eventsService.updateEventById(updatedReservation.eventId.toString(), {
-                location: clubLocation.address,
+                location: clubLocation.locality,
                 schedule: scheduleDate,
                 duration: totalDuration
             });
