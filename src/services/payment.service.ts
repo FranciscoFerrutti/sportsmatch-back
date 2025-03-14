@@ -67,14 +67,6 @@ export class PaymentService {
             });
         }
 
-        if(reservation.getCost() !== paymentData.transaction_amount){
-            throw new GenericException({
-                status: HTTP_STATUS.BAD_REQUEST,
-                message: "Transaction amount does not match reservation cost",
-                internalStatus: "TRANSACTION_AMOUNT_MISMATCH"
-            });
-        }
-
         try {
             const mpResponse = await this.payment.create({ body: paymentData });
 
@@ -219,5 +211,39 @@ export class PaymentService {
                 internalStatus: "REFUND_PROCESSING_ERROR"
             });
         }
+    }
+
+    async getPaymentAndRefundInfoByReservationId(reservationId: number): Promise<{
+        isPaid: boolean;
+        paymentDate: Date | null;
+        paymentAmount: number | null;
+        isRefunded: boolean;
+        refundDate: Date | null;
+        refundAmount: number | null;
+    }> {
+        const payment = await this.paymentPersistence.findApprovedPaymentByReservationId(reservationId);
+        
+        if (!payment) {
+            return {
+                isPaid: false,
+                paymentDate: null,
+                paymentAmount: null,
+                isRefunded: false,
+                refundDate: null,
+                refundAmount: null
+            };
+        }
+        
+        // Check for refund
+        const refund = payment ? await this.refundPersistence.findRefundByPaymentId(payment.id) : null;
+        
+        return {
+            isPaid: true,
+            paymentDate: payment.transactionDate,
+            paymentAmount: payment.transactionAmount,
+            isRefunded: !!refund,
+            refundDate: refund?.dateCreated || null,
+            refundAmount: refund?.amountRefunded || null
+        };
     }
 } 

@@ -362,7 +362,25 @@ class ReservationsService {
         status?: ReservationStatus
     ): Promise<IReservationDetail[]> {
         const reservations = await this.reservationPersistence.findByClub(clubId, status);
-        return Promise.all(reservations.map(reservation => this.mapToReservationDetail(reservation)));
+        
+        return Promise.all(reservations.map(async reservation => {
+            const reservationDetail = await this.mapToReservationDetail(reservation);
+            
+            // Add payment and refund information
+            const paymentInfo = await this.paymentService.getPaymentAndRefundInfoByReservationId(reservation.id);
+            
+            return {
+                ...reservationDetail,
+                payment: {
+                    isPaid: paymentInfo.isPaid,
+                    paymentDate: paymentInfo.paymentDate,
+                    paymentAmount: paymentInfo.paymentAmount,
+                    isRefunded: paymentInfo.isRefunded,
+                    refundDate: paymentInfo.refundDate,
+                    refundAmount: paymentInfo.refundAmount
+                }
+            };
+        }));
     }
 
     public async completeReservation(reservationId: number): Promise<IReservationDetail> {
