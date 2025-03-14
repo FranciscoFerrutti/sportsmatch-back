@@ -212,6 +212,7 @@ class ReservationsService {
         userId: number
     ): Promise<void> {
         const reservation = await this.findReservationWithOwnerDetails(reservationId);
+        console.log("Found reservation: ", reservation)
         const reservationStatus = reservation.status
 
         if (organizerType === OrganizerType.CLUB) {
