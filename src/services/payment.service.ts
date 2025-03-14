@@ -182,6 +182,8 @@ export class PaymentService {
                 throw new NotFoundException("Payment");
             }
 
+            console.log("Refunding payment of reservation: ", reservationId);
+
             const response = await axios.post(`https://api.mercadopago.com/v1/payments/${payment.mpId}/refunds`, {}, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,6 +191,8 @@ export class PaymentService {
                     'X-Idempotency-Key': `${payment.id}-${Date.now()}`
                 }
             });
+
+            console.log("Response from MP: ", response);
 
             if (!response || response.status !== 201) {
                 throw new GenericException({

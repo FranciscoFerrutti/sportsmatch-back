@@ -45,6 +45,7 @@ class ReservationsService {
 
     private async getAndValidateEventOwnership(eventId: number, userId: string): Promise<IEventDetailDto> {
         const event = await this.eventsService.getEventById(eventId.toString());
+
         if (!event) {
             throw new NotFoundException("Event");
         }
@@ -211,6 +212,7 @@ class ReservationsService {
         userId: number
     ): Promise<void> {
         const reservation = await this.findReservationWithOwnerDetails(reservationId);
+        console.log("Found reservation: ", reservation)
         const reservationStatus = reservation.status
 
         if (organizerType === OrganizerType.CLUB) {

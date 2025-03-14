@@ -1,6 +1,7 @@
 import ClubPersistence from "../database/persistence/club.persistence";
 import { Transaction } from "sequelize";
 import ClubLocationPersistence from "../database/persistence/clubLocation.persistence";
+import Club from "../database/models/Club.model";
 
 const default_radius = 5;
 
@@ -24,14 +25,14 @@ class ClubService {
         email: string,
         name: string,
         phone_number: string,
+        description: string,
         transaction: Transaction
     ): Promise<void> {
-        await ClubPersistence.createClub({ email, name, phone_number}, transaction);
+        await ClubPersistence.createClub({ email, name, phone_number, description}, transaction);
     }
 
 
     public async getClubById(id: string): Promise<any> {
-        console.log("🔍 Buscando club con ID:", id);
 
         const club = await ClubPersistence.getClubById(id);
 
@@ -55,26 +56,41 @@ class ClubService {
 
 
 
-    public async updateClub(userId: string, phoneNumber?: string, location?: string): Promise<void> {
-        // if (phoneNumber) await this.updatePhoneNumber(userId, phoneNumber);
-        // if (location) await this.updateLocation(userId, location);
+    public async updateClub(userId: string, phoneNumber?: string, description?: string, imageUrl?: string): Promise<void> {
+        try {
+            const club = await ClubPersistence.getClubById(userId);
+            if (!club) {
+                console.error(`❌ No se encontró el club con ID: ${userId}`);
+                throw new Error("Club no encontrado.");
+            }
+            const updateFields: Partial<Club> = {};
+            if (description !== undefined) updateFields.description = description;
+            if (imageUrl !== undefined) updateFields.image_url = imageUrl;
+            if (phoneNumber !== undefined) updateFields.phone_number = phoneNumber;
+            // if (location) await this.updateLocation(userId, location);
+            await ClubPersistence.updateClub(userId, updateFields);
+            console.log("✅ Club actualizado correctamente:", updateFields);
+        } catch (error) {
+            console.error("❌ Error al actualizar club:", error);
+            throw new Error("Error al actualizar club.");
+        }
     }
 
     // private async updatePhoneNumber(userId: string, phone_number: string): Promise<User> {
-        // try {
-        //     const updatedUser = await UserPersistence.updatePhoneNumber(+userId, phone_number);
-        //
-        //     return updatedUser;
-        // } catch (err) {
-        //     if (err.errors && err.errors[0]) {
-        //         const error = err.errors[0] as ValidationErrorItem;
-        //         if (error.type == 'unique violation') {
-        //             throw new GenericException({status: HTTP_STATUS.CONFLICT, message: `phoneNumber`, internalStatus: "CONFLICT"});
-        //         }
-        //         throw new GenericException({status: HTTP_STATUS.BAD_REQUEST, message: error.message, internalStatus: "VALIDATION_ERROR"});
-        //     }
-        //     throw err;
-        // }
+    // try {
+    //     const updatedUser = await UserPersistence.updatePhoneNumber(+userId, phone_number);
+    //
+    //     return updatedUser;
+    // } catch (err) {
+    //     if (err.errors && err.errors[0]) {
+    //         const error = err.errors[0] as ValidationErrorItem;
+    //         if (error.type == 'unique violation') {
+    //             throw new GenericException({status: HTTP_STATUS.CONFLICT, message: `phoneNumber`, internalStatus: "CONFLICT"});
+    //         }
+    //         throw new GenericException({status: HTTP_STATUS.BAD_REQUEST, message: error.message, internalStatus: "VALIDATION_ERROR"});
+    //     }
+    //     throw err;
+    // }
     // }
 
     public async updateLocation(userId: number, latitude: number, longitude: number, address: string, locality: string): Promise<void> {

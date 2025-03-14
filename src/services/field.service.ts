@@ -40,6 +40,7 @@ class FieldService{
             cost: field.cost_per_slot,
             capacity: field.capacity,
             slot_duration: field.slot_duration,
+            club_id: field.club_id,
             sports: field.sports?.map(sport => ({
                 id: sport.id,
                 name: sport.name

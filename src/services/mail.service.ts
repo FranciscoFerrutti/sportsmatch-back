@@ -22,7 +22,7 @@ export class MailService {
     public static async sendUserReservationDeclined(user: string, reservationId: number, club: string, date: string) {
         const subject = "Tu rerserva fue cancelada";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
@@ -39,7 +39,7 @@ export class MailService {
     public static async sendUserReservationRefund(user: string, reservationId: number, club: string, date: string, amount: number) {
         const subject = "Tu rerserva fue cancelada";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
@@ -57,7 +57,7 @@ export class MailService {
     public static async sendClubReservationRefund(user: string, reservationId: number, field: string, date: string, amount: number) {
         const subject = "Aviso de cancelacion de reserva";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/reservations`;
@@ -77,7 +77,7 @@ export class MailService {
     public static async sendReservationCompleted(user: string, reservationId: number, club: string, date: string) {
         const subject = "Recibimos tu pago!";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
@@ -95,7 +95,7 @@ export class MailService {
     public static async sendClubReservationCompleted(user: string, reservationId: number, field: string, date: string, amount: number) {
         const subject = "Recibimos un pago!";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/reservations`;
@@ -114,7 +114,7 @@ export class MailService {
     public static async sendReservationConfirmed(user: string, reservationId: number, club: string, date: string) {
         const subject = "Tu reserva fue confirmada";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
@@ -134,7 +134,7 @@ export class MailService {
     public static async sendReservationSubmit(user: string, club: string, date: string) {
         const subject = "Solicitud de reserva enviada";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = `sportsmatch://myevents`;
@@ -151,7 +151,7 @@ export class MailService {
     public static async sendClubReservationSubmit(user: string, field: string, date: string) {
         const subject = "Tenes una nueva solicitud de reserva";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/reservations`;
@@ -169,7 +169,7 @@ export class MailService {
     public static async sendClubEmailVerification(email: string, clubName: string, verificationToken: string) {
         const subject = "Verifica tu email - SportsMatch";
 
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
 
         const joinUrl = FRONTEND_URI + `/verify-email?token=${verificationToken}`;

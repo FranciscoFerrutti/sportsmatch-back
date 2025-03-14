@@ -30,8 +30,6 @@ class EventPersistence {
         const participantIdFilter = queryFilters.participantId?.toString().trim() !== undefined;
         const filterOut = !!queryFilters.filterOut;
 
-        await sequelize.query(`SET TIME ZONE 'America/Argentina/Buenos_Aires'`); // TODO this is a test remove
-
         const queryBuilder = new QueryBuilder(`SELECT
         events.id AS event_id,
         events.description,

@@ -34,7 +34,7 @@ class ClubAuthService {
         return Crypto.randomBytes(32).toString('hex');
     }
 
-    async createAuth(email: string, password: string, clubName: string, phoneNumber: string) {
+    async createAuth(email: string, password: string, clubName: string, phoneNumber: string, description: string) {
         let transaction;
         try {
             transaction = await sequelize.transaction();
@@ -43,7 +43,7 @@ class ClubAuthService {
             const verificationToken = this.generateVerificationToken();
 
             await ClubAuthPersistence.createAuth(email, passwordHash.toString(), verificationToken, transaction);
-            await this.clubService.createUser(email, clubName, phoneNumber, transaction);
+            await this.clubService.createUser(email, clubName, phoneNumber, description, transaction);
 
             await MailService.sendClubEmailVerification(email, clubName, verificationToken);
 
@@ -129,7 +129,7 @@ class ClubAuthService {
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
         const payload = {id: userId, email: email, type: 'club'};
         const key = this.jwtKey;
-        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
+        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: Number(expiryTime) });
     }
 }
 
