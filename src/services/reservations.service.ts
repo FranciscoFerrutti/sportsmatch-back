@@ -14,6 +14,7 @@ import {OrganizerType} from "../constants/event.constants";
 import Reservation from "../database/models/Reservation.model";
 import {MailService} from "./mail.service";
 import {PaymentService} from "./payment.service";
+import ParticipantService from "./participant.service";
 
 class ReservationsService {
     private static instance: ReservationsService;
@@ -22,6 +23,7 @@ class ReservationsService {
     private readonly fieldsService: FieldsService;
     private readonly timeSlotsService: TimeSlotsService;
     private readonly clubService: ClubService;
+    private readonly participantService: ParticipantService;
     private paymentService: PaymentService;
 
     private constructor() {
@@ -31,6 +33,7 @@ class ReservationsService {
         this.timeSlotsService = TimeSlotsService.getInstance();
         this.clubService = ClubService.getInstance();
         this.paymentService = PaymentService.getInstance(this);
+        this.participantService = ParticipantService.getInstance();
     }
 
     public static getInstance(): ReservationsService {
@@ -152,7 +155,7 @@ class ReservationsService {
         eventId: number,
         userId: number
     ): Promise<IReservationDetail[]> {
-        await this.checkEventOwnership(eventId.toString(), userId);
+        await this.checkOwnershipForGetReservation(eventId.toString(), userId);
 
         const reservations = await this.reservationPersistence.findAllByEventId(eventId);
         return Promise.all(reservations.map(reservation => this.mapToReservationDetail(reservation)));
@@ -326,6 +329,27 @@ class ReservationsService {
         if (!event || event.owner.id !== userId) {
             throw new GenericException({
                 message: "Event does not belong to user",
+                status: HTTP_STATUS.FORBIDDEN,
+                internalStatus: "INVALID_EVENT_ACCESS"
+            });
+        }
+    }
+
+    private async checkOwnershipForGetReservation(eventId: string, userId: number) {
+        const event = await this.eventsService.getEventById(eventId);
+        if (!event) {
+            throw new GenericException({
+                message: "Event not found",
+                status: HTTP_STATUS.NOT_FOUND,
+                internalStatus: "EVENT_NOT_FOUND"
+            });
+        }
+        
+        const isParticipant = await this.participantService.existParticipant(eventId, userId.toString());
+        
+        if (event.owner.id !== userId && !isParticipant) {
+            throw new GenericException({
+                message: "User is not authorized to access this event",
                 status: HTTP_STATUS.FORBIDDEN,
                 internalStatus: "INVALID_EVENT_ACCESS"
             });

@@ -1,18 +1,17 @@
-import { UniqueConstraintError } from "sequelize";
+import {UniqueConstraintError} from "sequelize";
 import DatabaseException from "../../exceptions/dbExceptions/database.exception";
 import DuplicateException from "../../exceptions/dbExceptions/duplicate.exception";
-import Participant, { IParticipantDetail } from "../models/Participant.model";
+import Participant, {IParticipantDetail} from "../models/Participant.model";
 import sequelize from "../connection";
 
 class ParticipantPersistence {
     static async createParticipant(eventId: string, userId: string): Promise<Participant> {
         try {
-            const participant = await Participant.create({
+            return await Participant.create({
                 eventId: eventId,
                 userId: userId,
                 status: false
             });
-            return participant;
         } catch (err) {
             if (err instanceof UniqueConstraintError) {
                 throw new DuplicateException("The user was already rated by the rater");
@@ -58,6 +57,19 @@ class ParticipantPersistence {
             }
         });
         return removedParticipant > 0;
+    }
+
+    static async getParticipant(eventId: string, userId: string): Promise<boolean> {
+        const participant = await Participant.findOne({
+            where: {
+                event_id: eventId,
+                user_id: userId
+            }
+        });
+
+        return !!participant;
+
+
     }
 
 }
