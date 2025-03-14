@@ -15,4 +15,10 @@ export default class RefundPersistence {
             where: { refundId }
         });
     }
+
+    async findRefundByPaymentId(paymentId: number): Promise<Refund | null> {
+        return Refund.findOne({
+            where: { paymentId }
+        });
+    }
 } 
