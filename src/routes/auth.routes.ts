@@ -15,7 +15,7 @@ export default class AuthRoutes {
 
     public init(): void {
         this.router.use(urlencoded({ extended: true }));
-        // this.router.use(cors());
+        //this.router.use(cors());
 
         this.router.post('/', this.controller.createAuth);
         this.router.get('/', userBasicAuthMiddleware, this.controller.login);

@@ -13,11 +13,11 @@ import GenericException from "../exceptions/generic.exception";
 @autobind
 class UsersController {
     private readonly usersService: UsersService;
-    //private readonly awsService: AWSService;
+    private readonly awsService: AWSService;
 
     constructor() {
         this.usersService = UsersService.getInstance();
-        //this.awsService = AWSService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -125,7 +125,7 @@ class UsersController {
             next(err);
         }
     }
-    /*
+
     public async getUserImage(req: Request, res: Response, next: NextFunction) {
         const userId = req.params.userId;
         
@@ -148,7 +148,7 @@ class UsersController {
             next(err);
         }
     }
-     */
+
 }
 
 export default UsersController;

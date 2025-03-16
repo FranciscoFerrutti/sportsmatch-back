@@ -18,7 +18,7 @@ export default class ClubsRoutes{
         this.router.get('/', this.controller.getClubs);
         this.router.put('/:clubId', clubAuthMiddleware, this.controller.updateClub);
         this.router.put('/:clubId/location', clubAuthMiddleware, this.controller.updateLocation);
-        //this.router.get('/:clubId/image', clubAuthMiddleware, this.controller.getClubImage);
-        //this.router.put('/:clubId/image', clubAuthMiddleware, this.controller.updateClubImage);
+        this.router.get('/:clubId/image', clubAuthMiddleware, this.controller.getClubImage);
+        this.router.put('/:clubId/image', clubAuthMiddleware, this.controller.updateClubImage);
     }
 }

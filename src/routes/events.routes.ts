@@ -17,7 +17,7 @@ export default class EventsRoutes {
 
     public init(): void {
         this.router.use(urlencoded({ extended: true }));
-        // this.router.use(cors());
+        //this.router.use(cors());
 
         this.router.get('/', this.controller.getEvents);
         this.router.post('/', authMiddleware, this.controller.createEvent);

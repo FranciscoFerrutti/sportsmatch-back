@@ -12,11 +12,11 @@ import AWSService from "../services/aws.service";
 @autobind
 class ClubsController{
     private readonly clubService: ClubService;
-    //private readonly awsService: AWSService;
+    private readonly awsService: AWSService;
 
     constructor() {
         this.clubService = ClubService.getInstance();
-        //this.awsService = AWSService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -115,7 +115,6 @@ class ClubsController{
         }
     }
 
-    /*
     @document(SwaggerEndpointBuilder.create()
         .responses({ "200": { description: "OK", schema: { type: "object" } } })
         .build()
@@ -169,7 +168,6 @@ class ClubsController{
             next(err);
         }
     }
-     */
 }
 
 export default ClubsController;
