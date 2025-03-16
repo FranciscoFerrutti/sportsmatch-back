@@ -183,7 +183,7 @@ class EventPersistence {
                 {
                     model: User,
                     as: 'userOwner',
-                    attributes: ['firstname', 'id', 'email'],
+                    attributes: ['firstname', 'id', 'email', 'image_url'],
                     required: false,
                 },
                 {

@@ -8,12 +8,14 @@ export default class EventDetailDtoMapper {
             ? {
                 firstName: event.userOwner?.firstname || '',
                 id: event.userOwner?.id || 0,
-                email: event.userOwner?.email || ''
+                email: event.userOwner?.email || '',
+                image_url : event.userOwner?.image_url || ''
             }
             : {
                 firstName: event.clubOwner?.name || '',
                 id: event.clubOwner?.id || 0,
-                email: event.clubOwner?.email || ''
+                email: event.clubOwner?.email || '',
+                image_url : event.clubOwner?.image_url || ''
             };
 
         const eventDetailDto: IEventDetailDto = {

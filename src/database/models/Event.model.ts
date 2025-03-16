@@ -20,11 +20,13 @@ export interface IEventDetail {
         firstname: string;
         id: number;
         email: string;
+        image_url: string;
     };
     clubOwner?: {
         name: string;
         id: number;
         email: string;
+        image_url: string;
     };
 }
 
