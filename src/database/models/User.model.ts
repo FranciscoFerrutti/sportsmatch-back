@@ -16,6 +16,7 @@ export interface IUserDetail {
     count: number;
     sports: number[];
     locations: string[];
+    image_url: string;
 }
 
 export interface IUserAttributes {

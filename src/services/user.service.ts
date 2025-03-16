@@ -10,6 +10,7 @@ import { Transaction, ValidationErrorItem } from "sequelize";
 import { HTTP_STATUS } from "../constants/http.constants";
 import IUserDetailDto from "../dto/userDetail.dto";
 import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
+import UserImagePersistence from "../database/persistence/userImage.persistence";
 
 
 class UsersService {
@@ -64,10 +65,11 @@ class UsersService {
         await UserPersistence.createUser({ email, firstname, lastname, phone_number, birthdate}, transaction);
     }
 
-    public async updateUser(userId: string, phoneNumber?: string, locations?: string[], sports?: string[]): Promise<void> {
+    public async updateUser(userId: string, phoneNumber?: string, locations?: string[], sports?: string[], imageUrl?: string): Promise<void> {
         if (phoneNumber) await this.updatePhoneNumber(userId, phoneNumber);
         if (locations) await this.updateLocations(userId, locations);
         if (sports) await this.updateSports(userId, sports);
+        if (imageUrl) await this.updateImageUrl(userId, imageUrl);
     }
 
     private async updatePhoneNumber(userId: string, phone_number: string): Promise<User> {
@@ -94,6 +96,11 @@ class UsersService {
     private async updateSports(userId: string, sports: string[]): Promise<void> {
         const newSports = await UserSportPersistence.updateUserSports(userId, sports);
     }
+
+    private async updateImageUrl(userId: string, imageUrl: string): Promise<void> {
+        await UserImagePersistence.updateUserImage(userId, imageUrl);
+    }
+
 }
 
 export default UsersService;

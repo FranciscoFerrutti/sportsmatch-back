@@ -107,18 +107,19 @@ class UsersController {
     @validateBody(Joi.object({
         phoneNumber: Joi.string().optional(),
         locations: Joi.array().items(Joi.string()).optional(),
-        sports: Joi.array().items(Joi.number()).optional()
+        sports: Joi.array().items(Joi.number()).optional(),
+        imageUrl: Joi.string().optional()
     }))
     @HttpRequestInfo("/users/:userId", HTTP_METHODS.PUT)
     public async updateUser(req: Request, res: Response, next: NextFunction) {
         const userIdPath = req.params.userId;
-        const { phoneNumber, locations, sports } = req.body;
+        const { phoneNumber, locations, sports, imageUrl } = req.body;
         const userId = req.user.id;
 
         try {
             if (userIdPath !== userId) throw new Error("User can't update another user");
 
-            await this.usersService.updateUser(userId, phoneNumber, locations, sports);
+            await this.usersService.updateUser(userId, phoneNumber, locations, sports, imageUrl);
             res.status(HTTP_STATUS.OK).send();
         } catch (err) {
             next(err);
