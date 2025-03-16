@@ -48,6 +48,11 @@ class EventPersistence {
             WHEN events.organizer_type = '${OrganizerType.CLUB}' THEN clubs.name
             ELSE NULL
         END as owner_name,
+        CASE
+            WHEN events.organizer_type = '${OrganizerType.USER}' THEN users.image_url
+            WHEN events.organizer_type = '${OrganizerType.CLUB}' THEN clubs.image_url
+            ELSE NULL
+            END as owner_image_url,
         events.owner_id,
         ${participantIdFilter ? "participants.status as participant_status," : ""}
         ${participantIdFilter ? "COALESCE(rated_aux.isRated, FALSE) as is_rated," : ""}
@@ -134,6 +139,7 @@ class EventPersistence {
                 owner_firstname: event.owner_firstname,
                 owner_name: event.owner_name,
                 owner_id: event.owner_id,
+                owner_image_url: event.owner_image_url,
                 participant_status: event.participant_status,
                 is_rated: event.is_rated,
                 rating: event.rating,

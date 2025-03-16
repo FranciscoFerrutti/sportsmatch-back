@@ -24,6 +24,7 @@ export interface EventQuery {
     owner_firstname?: string;
     owner_name?: string;
     owner_id: number;
+    owner_image_url: string;
     participant_status?: boolean;
     is_rated?: boolean;
     rating: number;

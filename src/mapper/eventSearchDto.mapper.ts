@@ -10,7 +10,8 @@ export default class EventSearchDtoMapper {
             firstName: eventSearch.organizer_type === OrganizerType.USER 
                 ? eventSearch.owner_firstname || ''
                 : eventSearch.owner_name || '',
-            id: eventSearch.owner_id
+            id: eventSearch.owner_id,
+            imageUrl: eventSearch.owner_image_url || ''
         };
 
         const userDetailDto: IEventQueryDto = {
