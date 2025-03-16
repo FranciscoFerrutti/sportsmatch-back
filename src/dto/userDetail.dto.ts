@@ -7,6 +7,7 @@ export default interface IUserDetailDto {
     phoneNumber: string;
     birthDate: string;
     email: string;
+    imageUrl: string;
     rating: {
         rate: number,
         count: number

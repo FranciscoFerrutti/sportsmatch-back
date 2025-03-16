@@ -40,6 +40,7 @@ class UserPersistence {
                 u.lastname,
                 u.phone_number as phone_number,
                 u.birthdate as birth_date,
+                u.image_url,
                 u.email,
                 ARRAY_AGG(DISTINCT (us.sport_id)) AS sports,
                 ARRAY_AGG(DISTINCT ul.location) AS locations,

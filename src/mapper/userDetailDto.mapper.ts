@@ -12,6 +12,7 @@ export default class UserDetailDtoMapper {
             phoneNumber: userDetail.phone_number,
             birthDate: userDetail.birth_date,
             email: userDetail.email,
+            imageUrl: userDetail.image_url,
             sports: userDetail.sports,
             locations: userDetail.locations,
             rating: {
