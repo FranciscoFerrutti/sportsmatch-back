@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 import * as fs from 'fs';
 import * as HandleBars from 'handlebars';
-import * as path from 'path';
 
 const FROM = "no-reply@sportsmatch-itba.com";
 const FRONTEND_URI = process.env.FRONTEND_URI || "https://your-frontend-url.com";
@@ -19,7 +18,7 @@ export class MailService {
     }
 
     //CANCEL RESERVATION
-    public static async sendUserReservationDeclined(user: string, reservationId: number, club: string, date: string) {
+    public static async sendUserReservationDeclined(user: string, reservationId: number, club: string, date: string,month: string, hours: string) {
         const subject = "Tu rerserva fue cancelada";
 
         const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
@@ -27,7 +26,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+ date +" fue cancelada. " +
+            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month +" a las " + hours +" fue cancelada. " +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
             url: joinUrl
@@ -36,7 +35,7 @@ export class MailService {
         await this.sendMail(user, subject, html);
     }
 
-    public static async sendUserReservationRefund(user: string, reservationId: number, club: string, date: string, amount: number) {
+    public static async sendUserReservationRefund(user: string, reservationId: number, club: string, date: string,month: string, hours: string, amount: number) {
         const subject = "Tu rerserva fue cancelada";
 
         const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
@@ -44,7 +43,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+ date +" fue cancelada. " +
+            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month + " a las " + hours +" fue cancelada. " +
                 "Te devolvimos $" + amount +". Lo veras reflejado el monto en los detalles de tu proxima factura ó en tu cuenta corriente en caso de débito." +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
@@ -54,7 +53,7 @@ export class MailService {
         await this.sendMail(user, subject, html);
     }
 
-    public static async sendClubReservationRefund(user: string, reservationId: number, field: string, date: string, amount: number) {
+    public static async sendClubReservationRefund(user: string, reservationId: number, field: string, date: string,month: string, hours: string, amount: number) {
         const subject = "Aviso de cancelacion de reserva";
 
         const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
@@ -62,7 +61,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "La reserva en la cancha nombre: " + field + " para la fecha "+ date +" fue cancelada." +
+            message: "La reserva en la cancha nombre: " + field + " para la fecha "+  date +"/"+month + " a las " + hours + " fue cancelada." +
                 "Como el usuario ya habia abonado la reserva le devolvimos $" + amount + ".",
             clickme: "Ver reservas",
             url: joinUrl
@@ -74,7 +73,7 @@ export class MailService {
     //-----------------------
 
     //RECEIVE PAYMENT
-    public static async sendReservationCompleted(user: string, reservationId: number, club: string, date: string) {
+    public static async sendReservationCompleted(user: string, reservationId: number, club: string, date: string,month: string, hours: string) {
         const subject = "Recibimos tu pago!";
 
         const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
@@ -82,7 +81,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Recibimos el pago de la seña del club " + club + " para la fecha "+  date +
+            message: "Recibimos el pago de la seña del club " + club + " para la fecha " +  date +"/"+month +" a las " + hours +
                 "El dia del evento podras cancelar el monto restante en el club." +
                 "\n Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña.",
             clickme: "Ver reserva",
@@ -92,7 +91,7 @@ export class MailService {
         await this.sendMail(user, subject, html);
     }
 
-    public static async sendClubReservationCompleted(user: string, reservationId: number, field: string, date: string, amount: number) {
+    public static async sendClubReservationCompleted(user: string, reservationId: number, field: string, date: string,month: string, hours: string, amount: number) {
         const subject = "Recibimos un pago!";
 
         const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
@@ -100,7 +99,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha "+  date,
+            message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha "+  date +"/"+month + " a las " + hours,
             clickme: "Ver reserva",
             url: joinUrl
         });
@@ -111,7 +110,7 @@ export class MailService {
     //-----------------------
 
     //CONFIRM RESERVATION
-    public static async sendReservationConfirmed(user: string, reservationId: number, club: string, date: string) {
+    public static async sendReservationConfirmed(user: string, reservationId: number, club: string, date: string, hour:string) {
         const subject = "Tu reserva fue confirmada";
 
         const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
@@ -119,7 +118,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Tu reserva en " + club + " para la fecha "+  date +" fue aceptada. " +
+            message: "Tu reserva en " + club + " para la fecha "+  date + " a las " + hour + " fue aceptada. " +
                 "Abona el monto de la seña para completar tu reserva. " +
                 "Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña.",
             clickme: "Completar reserva",
