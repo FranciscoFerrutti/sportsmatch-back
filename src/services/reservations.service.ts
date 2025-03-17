@@ -255,14 +255,14 @@ class ReservationsService {
             const scheduleDate = new Date(reservation.event.schedule);
             const timeDifference = scheduleDate.getTime() - now.getTime();
             const hoursUntilReservation = (timeDifference / (1000 * 60 * 60)) + 3;
-            
+
             if (reservationStatus == ReservationStatus.COMPLETED && (organizerType === OrganizerType.CLUB  || hoursUntilReservation >= 24) ) {
                 const refund = await this.paymentService.refundPayment(reservationId);
-                await MailService.sendUserReservationRefund(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(),  reservation.event.schedule.getUTCMonth().toString(), reservation.event.schedule.getHours().toString(), refund.amountRefunded);
-                await MailService.sendClubReservationRefund(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(),  reservation.event.schedule.getUTCMonth().toString(),reservation.event.schedule.getHours().toString(), refund.amountRefunded);
+                await MailService.sendUserReservationRefund(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(),  (reservation.event.schedule.getMonth()+1).toString(), reservation.event.schedule.getHours().toString(), refund.amountRefunded);
+                await MailService.sendClubReservationRefund(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(),  (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString(), reservation.cost / 2);
 
             } else {
-                await MailService.sendUserReservationDeclined(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getUTCDate().toString(), reservation.event.schedule.getUTCMonth().toString(), reservation.event.schedule.getUTCHours().toString());
+                await MailService.sendUserReservationDeclined(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getUTCDate().toString(), (reservation.event.schedule.getMonth()+1).toString(), reservation.event.schedule.getUTCHours().toString());
                 console.log("Reservation is less than 24 hours away and organizer is a user. No refund.");
             }
 

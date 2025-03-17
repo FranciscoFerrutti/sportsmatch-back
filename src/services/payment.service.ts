@@ -88,8 +88,8 @@ export class PaymentService {
 
             if (paymentRecord.transactionStatus === PaymentStatus.APPROVED) {
                 await this.reservationService.completeReservation(reservationId);
-                await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(), reservation.event.schedule.getUTCMonth().toString(),reservation.event.schedule.getHours().toString());
-                await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(), reservation.event.schedule.getUTCMonth().toString(),reservation.event.schedule.getHours().toString(), paymentRecord.transactionAmount);
+                await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString());
+                await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString(), reservation.cost / 2);
             }
 
             return paymentRecord;

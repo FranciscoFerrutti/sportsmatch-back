@@ -26,7 +26,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month +" a las " + hours +" fue cancelada. " +
+            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month +" a las " + hours +"hs fue cancelada. " +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
             url: joinUrl
@@ -43,7 +43,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month + " a las " + hours +" fue cancelada. " +
+            message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month + " a las " + hours +"hs fue cancelada. " +
                 "Te devolvimos $" + amount +". Lo veras reflejado el monto en los detalles de tu proxima factura ó en tu cuenta corriente en caso de débito." +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
@@ -61,7 +61,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "La reserva en la cancha nombre: " + field + " para la fecha "+  date +"/"+month + " a las " + hours + " fue cancelada." +
+            message: "La reserva en la cancha nombre: " + field + " para la fecha "+  date +"/"+month + " a las " + hours + "hs fue cancelada." +
                 "Como el usuario ya habia abonado la reserva le devolvimos $" + amount + ".",
             clickme: "Ver reservas",
             url: joinUrl
@@ -82,7 +82,7 @@ export class MailService {
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
             message: "Recibimos el pago de la seña del club " + club + " para la fecha " +  date +"/"+month +" a las " + hours +
-                "El dia del evento podras cancelar el monto restante en el club." +
+                "hs. El dia del evento podras cancelar el monto restante en el club." +
                 "\n Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña.",
             clickme: "Ver reserva",
             url: joinUrl
@@ -99,7 +99,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
-            message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha "+  date +"/"+month + " a las " + hours,
+            message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha "+  date +"/"+month + " a las " + hours + "hs",
             clickme: "Ver reserva",
             url: joinUrl
         });
@@ -118,7 +118,7 @@ export class MailService {
 
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
-            message: "Tu reserva en " + club + " para la fecha "+  date + " a las " + hour + " fue aceptada. " +
+            message: "Tu reserva en " + club + " para la fecha "+  date + " a las " + hour + "hs fue aceptada. " +
                 "Abona el monto de la seña para completar tu reserva. " +
                 "Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña.",
             clickme: "Completar reserva",
