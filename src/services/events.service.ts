@@ -66,6 +66,7 @@ class EventsService {
     public async updateEvent(eventId: string, userId: string, organizerType: OrganizerType, updateData: {
         schedule?: string; // Time in format HH:MM
         description?: string;
+        duration?: number;
     }): Promise<Event> {
         const event = await EventPersistence.getEventById(eventId);
         
@@ -124,6 +125,9 @@ class EventsService {
             }
         }
 
+        if(updateData.duration){
+            updates.duration = updateData.duration;
+        }
         // Update the event in the database
         return await EventPersistence.updateEvent(eventId, updates);
     }
