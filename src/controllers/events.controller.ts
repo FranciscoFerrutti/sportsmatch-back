@@ -239,7 +239,8 @@ class EventsController {
     }))
     @validateBody(Joi.object({
         schedule: Joi.string().optional().description('Time in format HH:MM'),
-        description: Joi.string().max(100).optional()
+        description: Joi.string().max(100).optional(),
+        duration: Joi.number().optional()
     }))
     @HttpRequestInfo("/events/{eventId}", HTTP_METHODS.PATCH)
     public async updateEvent(req: Request, res: Response, next: NextFunction) {
@@ -247,11 +248,12 @@ class EventsController {
             const eventId = req.params.eventId;
             const userId = req.user?.id.toString();
             const organizerType = req.header('x-auth-type') === 'club' ? OrganizerType.CLUB : OrganizerType.USER;
-            const { schedule, description } = req.body;
+            const { schedule, description, duration } = req.body;
             
             const result = await this.eventsService.updateEvent(eventId, userId, organizerType, {
                 schedule,
-                description
+                description,
+                duration
             });
             
             res.status(HTTP_STATUS.OK).send({
