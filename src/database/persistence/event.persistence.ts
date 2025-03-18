@@ -59,8 +59,8 @@ class EventPersistence {
         COALESCE(rate.rating::float, 0) as rating,
         COALESCE(rate.count::integer, 0) as rate_count,
         CASE
-            WHEN events.schedule > CURRENT_TIMESTAMP THEN 0
-            WHEN events.schedule <= CURRENT_TIMESTAMP AND events.schedule + (events.duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
+            WHEN events.schedule > (CURRENT_TIMESTAMP - INTERVAL '3 hours') THEN 0
+            WHEN events.schedule <= (CURRENT_TIMESTAMP - INTERVAL '3 hours') AND events.schedule + (events.duration * INTERVAL '1 minute') >= (CURRENT_TIMESTAMP - INTERVAL '3 hours') THEN 1
             ELSE 2
         END AS event_status
         FROM events
