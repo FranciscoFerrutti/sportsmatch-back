@@ -13,4 +13,5 @@ export default interface IEventDetailDto {
         email: string
     }
     status: number;
+    organizerType: string;
 }
