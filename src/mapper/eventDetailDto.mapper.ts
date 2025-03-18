@@ -28,6 +28,7 @@ export default class EventDetailDtoMapper {
             remaining: event.remaining,
             duration: event.duration,
             status: event.status,
+            organizerType: event.organizerType,
             owner
         }
         return eventDetailDto;
