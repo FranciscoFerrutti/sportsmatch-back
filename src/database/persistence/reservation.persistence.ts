@@ -186,7 +186,11 @@ export default class ReservationPersistence {
                     attributes: ['id', 'name', 'club_id'],
                     include: [{
                         model: Club,
-                        attributes: ['id', 'name']
+                        attributes: ['id', 'name'],
+                        include: [{
+                            model: ClubLocation,
+                            attributes: ['address']
+                        }]
                     }]
                 }
             ],
