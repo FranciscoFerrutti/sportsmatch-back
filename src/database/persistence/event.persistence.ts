@@ -177,8 +177,8 @@ class EventPersistence {
                 [
                     sequelize.literal(`
                         CASE
-                            WHEN schedule > CURRENT_TIMESTAMP THEN 0
-                            WHEN schedule <= CURRENT_TIMESTAMP AND schedule + (duration * INTERVAL '1 minute') >= CURRENT_TIMESTAMP THEN 1
+                            WHEN schedule > (CURRENT_TIMESTAMP - INTERVAL '3 hours') THEN 0
+                            WHEN schedule <= (CURRENT_TIMESTAMP - INTERVAL '3 hours') AND schedule + (duration * INTERVAL '1 minute') >= (CURRENT_TIMESTAMP - INTERVAL '3 hours') THEN 1
                             ELSE 2
                         END
                     `),
