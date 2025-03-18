@@ -64,7 +64,7 @@ class FieldPersistence{
                 },
                 {
                     model: Sport,
-                    through: { attributes: [] } // Exclude junction table attributes
+                    through: { attributes: [] }
                 }
             ]
         });

@@ -36,6 +36,7 @@ export interface IReservationDetail {
         name: string;
         clubId: number;
         clubName: string;
+        description: string | null;
         address: string | null;
     };
 } 
