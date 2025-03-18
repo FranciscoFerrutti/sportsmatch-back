@@ -319,6 +319,7 @@ class ReservationsService {
                 name: field.name,
                 clubId: field.club_id,
                 clubName: field.club.name,
+                description: field.description || null,
                 address: field.club.location?.address || null
             }
         };
