@@ -12,6 +12,7 @@ export default class ParticipantDetailDtoMapper {
             email: p.email,
             participantStatus: p.participant_status,
             phoneNumber: p.phone_number,
+            imageUrl: p.image_url,
             rating: {
                 rate: round(p.rating, 2),
                 count: p.count

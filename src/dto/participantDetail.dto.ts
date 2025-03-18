@@ -7,6 +7,7 @@ export default interface IParticipantDetailDto {
     email: string;
     participantStatus: boolean;
     phoneNumber: string;
+    imageUrl: string;
     rating: {
         rate: number,
         count: number
