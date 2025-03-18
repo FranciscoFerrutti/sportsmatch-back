@@ -9,6 +9,7 @@ export interface IParticipantDetail {
     email: string,
     participant_status: boolean,
     phone_number: string,
+    image_url: string,
     rating: number,
     count: number,
     is_rated: boolean

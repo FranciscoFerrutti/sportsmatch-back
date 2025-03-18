@@ -28,6 +28,7 @@ class ParticipantPersistence {
                     users.email                         as email,
                     participants.status                 as participant_status,
                     users.phone_number                  as phone_number,
+                    users.image_url                     as image_url,
                     COALESCE(avg(rating)::float, 0)     as rating,
                     COALESCE(count(rating)::integer, 0) as count,
                     COALESCE(rated_aux.isRated, FALSE)      as is_rated
@@ -38,7 +39,7 @@ class ParticipantPersistence {
                     select CASE WHEN MAX(1) > 0 THEN TRUE ELSE FALSE END AS isRated, rated from ratings where event_id = :eventId group by rated
                 ) as rated_aux on rated_aux.rated = participants.user_id
                 WHERE participants.event_id = :eventId
-                GROUP BY participants.user_id, users.firstname, users.lastname, users.email, participants.status, users.phone_number,
+                GROUP BY participants.user_id, users.firstname, users.lastname, users.email, participants.status, users.phone_number, users.image_url,
                     rated_aux.isRated`, {replacements: { eventId }});
         
         return participants[0] as IParticipantDetail[];
