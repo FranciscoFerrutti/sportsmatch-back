@@ -15,6 +15,7 @@ export default class EventDetailDtoMapper {
                 firstName: event.clubOwner?.name || '',
                 id: event.clubOwner?.id || 0,
                 email: event.clubOwner?.email || '',
+                address: event.clubOwner?.location?.address || ''
                 imageUrl : event.clubOwner?.image_url || ''
             };
 
