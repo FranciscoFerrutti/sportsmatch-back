@@ -10,6 +10,7 @@ import UserPersistence from "../database/persistence/user.persistence";
 import { ValidationErrorItem } from "sequelize";
 import { HTTP_STATUS } from "../constants/http.constants";
 import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
+import { SignOptions } from 'jsonwebtoken';
 
 class AuthService {
     private static instance: AuthService;
@@ -108,10 +109,12 @@ class AuthService {
             throw new Error("JWT_KEY is missing or invalid");
         }
 
-        return jwt.sign(payload, this.jwtKey, {
-            expiresIn: expiryTime,
-            issuer: "byPS",
-        });
+        const options: SignOptions = {
+            issuer: 'byPS',
+            expiresIn: expiryTime
+        };
+
+        return jwt.sign(payload, this.jwtKey, options);
     };
 
 }

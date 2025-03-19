@@ -10,6 +10,7 @@ import Bluebird from "bluebird";
 import Crypto from "crypto";
 import ClubService from "./club.service";
 import { MailService } from "./mail.service";
+import { SignOptions } from 'jsonwebtoken';
 
 class ClubAuthService {
     private static instance: ClubAuthService;
@@ -129,7 +130,12 @@ class ClubAuthService {
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
         const payload = {id: userId, email: email, type: 'club'};
         const key = this.jwtKey;
-        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
+        const options: SignOptions = {
+            issuer: 'byPS',
+            expiresIn: expiryTime
+        };
+
+        return jwt.sign(payload, this.jwtKey, options);
     }
 }
 
