@@ -24,7 +24,7 @@ class ClubAuthService {
     }
 
     private constructor() {
-        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '7600000';
+        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h';
         this.jwtKey = process.env.JWT_KEY ?? 'kvajfvhjabdsjhvajdhvjsvbsmn';
         this.clubService = ClubService.getInstance();
         this.FRONTEND_URI = process.env.FRONTEND_URI || "https://your-frontend-url.com";
@@ -129,7 +129,7 @@ class ClubAuthService {
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
         const payload = {id: userId, email: email, type: 'club'};
         const key = this.jwtKey;
-        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: Number(expiryTime) });
+        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
     }
 }
 

@@ -23,7 +23,7 @@ class AuthService {
     }
 
     private constructor() {
-        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '7600000';
+        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h';
         this.jwtKey = process.env.JWT_KEY ?? "kvajfvhjabdsjhvajdhvjsvbsmn";
         this.userService = UsersService.getInstance();
     }
@@ -109,7 +109,7 @@ class AuthService {
         }
 
         return jwt.sign(payload, this.jwtKey, {
-            expiresIn: Number(expiryTime),
+            expiresIn: expiryTime,
             issuer: "byPS",
         });
     };
