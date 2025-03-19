@@ -1,51 +1,29 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MailService = void 0;
-const nodemailer_1 = __importDefault(require("nodemailer"));
-const fs = __importStar(require("fs"));
-const HandleBars = __importStar(require("handlebars"));
-const path = __importStar(require("path"));
+import nodemailer from 'nodemailer';
+import * as fs from 'fs';
+import * as HandleBars from 'handlebars';
+
 const FROM = "no-reply@sportsmatch-itba.com";
 const FRONTEND_URI = process.env.FRONTEND_URI || "https://your-frontend-url.com";
-class MailService {
+
+export class MailService {
+
+    private static instance: MailService;
+
     static getInstance() {
-        if (!MailService.instance)
-            MailService.instance = new MailService();
+        if (!MailService.instance) MailService.instance = new MailService();
         return MailService.instance;
     }
-    constructor() {
+
+    private constructor() {
     }
+
     //CANCEL RESERVATION
-    static async sendUserReservationDeclined(user, reservationId, club, date) {
+    public static async sendUserReservationDeclined(user: string, reservationId: number, club: string, date: string,month: string, hours: string) {
         const subject = "Tu rerserva fue cancelada";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
             message: "Lamentamos informarte que tu reserva en " + club + " para la fecha " + date + " fue cancelada. " +
@@ -53,12 +31,16 @@ class MailService {
             clickme: "Crear evento",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
-    static async sendUserReservationRefund(user, reservationId, club, date, amount) {
+
+    public static async sendUserReservationRefund(user: string, reservationId: number, club: string, date: string,month: string, hours: string, amount: number) {
         const subject = "Tu rerserva fue cancelada";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
             message: "Lamentamos informarte que tu reserva en " + club + " para la fecha " + date + " fue cancelada. " +
@@ -67,12 +49,16 @@ class MailService {
             clickme: "Crear evento",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
-    static async sendClubReservationRefund(user, reservationId, field, date, amount) {
-        const subject = "Aviso de cancelación de reserva";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+
+    public static async sendClubReservationRefund(user: string, reservationId: number, field: string, date: string,month: string, hours: string, amount: number) {
+        const subject = "Aviso de cancelacion de reserva";
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
             message: "La reserva en la cancha nombre: " + field + " para la fecha " + date + " fue cancelada." +
@@ -80,14 +66,19 @@ class MailService {
             clickme: "Ver reservas",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
+
     //-----------------------
+
     //RECEIVE PAYMENT
-    static async sendReservationCompleted(user, reservationId, club, date) {
-        const subject = "¡Recibimos tu pago!";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+    public static async sendReservationCompleted(user: string, reservationId: number, club: string, date: string,month: string, hours: string) {
+        const subject = "Recibimos tu pago!";
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
             message: "Recibimos el pago de la seña del club " + club + " para la fecha " + date +
@@ -96,26 +87,35 @@ class MailService {
             clickme: "Ver reserva",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
-    static async sendClubReservationCompleted(user, reservationId, field, date, amount) {
-        const subject = "¡Recibimos un pago!";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+
+    public static async sendClubReservationCompleted(user: string, reservationId: number, field: string, date: string,month: string, hours: string, amount: number) {
+        const subject = "Recibimos un pago!";
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
             message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha " + date,
             clickme: "Ver reserva",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
+
     //-----------------------
+
     //CONFIRM RESERVATION
-    static async sendReservationConfirmed(user, reservationId, club, date) {
+    public static async sendReservationConfirmed(user: string, reservationId: number, club: string, date: string, hour:string) {
         const subject = "Tu reserva fue confirmada";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/accept-invitation?user=${user}&org=${reservationId}`;
         const html = template({
             message: "Tu reserva en " + club + " para la fecha " + date + " fue aceptada. " +
@@ -124,14 +124,18 @@ class MailService {
             clickme: "Completar reserva",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
     //-----------------------
+
     //CREATE RESERVATION
-    static async sendReservationSubmit(user, club, date) {
+    public static async sendReservationSubmit(user: string, club: string, date: string) {
         const subject = "Solicitud de reserva enviada";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = `sportsmatch://myevents`;
         const html = template({
             message: "Tu reserva para " + club + " el dia " + date.split(' ')[0] + " fue solicitada con éxito. " +
@@ -140,26 +144,33 @@ class MailService {
             clickme: "Ver reserva",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
-    static async sendClubReservationSubmit(user, field, date) {
-        const subject = "Tenés una nueva solicitud de reserva";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+    public static async sendClubReservationSubmit(user: string, field: string, date: string) {
+        const subject = "Tenes una nueva solicitud de reserva";
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/reservations`;
         const html = template({
             message: "Tenés una nueva reserva para la cancha nombre: " + field + " el dia " + date.split(' ')[0] + ". Recordá aceptarla desde la web en la sección “Reservas”",
             clickme: "Ver reservas",
             url: joinUrl
         });
+
         await this.sendMail(user, subject, html);
     }
     //-----------------------
+
     //EMAIL VERIFICATION
-    static async sendClubEmailVerification(email, clubName, verificationToken) {
-        const subject = "Verificá tu email - SportsMatch";
-        const emailTemplateSource = fs.readFileSync(path.join(__dirname, 'templates', 'emailTemplate.hbs'), 'utf8');
+    public static async sendClubEmailVerification(email: string, clubName: string, verificationToken: string) {
+        const subject = "Verifica tu email - SportsMatch";
+
+        const emailTemplateSource = fs.readFileSync('src/services/templates/emailTemplate.hbs', 'utf8');
         const template = HandleBars.compile(emailTemplateSource);
+
         const joinUrl = FRONTEND_URI + `/verify-email?token=${verificationToken}`;
         const html = template({
             message: "¡Bienvenido a SportsMatch " + clubName + "! " +
@@ -167,10 +178,12 @@ class MailService {
             clickme: "Verificar Email",
             url: joinUrl
         });
+
         await this.sendMail(email, subject, html);
     }
-    static async sendMail(to, subject, html) {
-        const transporter = nodemailer_1.default.createTransport({
+
+    public static async sendMail(to: string | string[], subject: string, html: string) {
+        const transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,
             port: 587,
             secure: false,
@@ -179,21 +192,21 @@ class MailService {
                 pass: process.env.MAIL_PASSWORD
             }
         });
+
         const mailOptions = {
             from: FROM,
             to: to,
             subject: subject,
             html: html
         };
-        transporter.sendMail(mailOptions, (error, info) => {
+
+        transporter.sendMail(mailOptions, (error, info)=> {
             if (error) {
                 console.error(error);
-            }
-            else {
+            } else {
                 console.log('Email sent: ' + info.response);
+
             }
         });
     }
 }
-exports.MailService = MailService;
-//# sourceMappingURL=mail.service.js.map
