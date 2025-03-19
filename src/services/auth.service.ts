@@ -24,7 +24,7 @@ class AuthService {
     }
 
     private constructor() {
-        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h' as const;
+        this.accessTokenExpireTime = (process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h') as `${number}${'s' | 'm' | 'h' | 'd'}`;
         this.jwtKey = process.env.JWT_KEY ?? "kvajfvhjabdsjhvajdhvjsvbsmn";
         this.userService = UsersService.getInstance();
     }

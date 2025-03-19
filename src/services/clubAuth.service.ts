@@ -25,7 +25,7 @@ class ClubAuthService {
     }
 
     private constructor() {
-        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h' as const;
+        this.accessTokenExpireTime = (process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h') as `${number}${'s' | 'm' | 'h' | 'd'}`;
         this.jwtKey = process.env.JWT_KEY ?? 'kvajfvhjabdsjhvajdhvjsvbsmn';
         this.clubService = ClubService.getInstance();
         this.FRONTEND_URI = process.env.FRONTEND_URI || "https://your-frontend-url.com";
