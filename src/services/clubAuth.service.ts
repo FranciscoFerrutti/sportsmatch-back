@@ -10,7 +10,6 @@ import Bluebird from "bluebird";
 import Crypto from "crypto";
 import ClubService from "./club.service";
 import { MailService } from "./mail.service";
-import { SignOptions } from 'jsonwebtoken';
 
 class ClubAuthService {
     private static instance: ClubAuthService;
@@ -25,7 +24,7 @@ class ClubAuthService {
     }
 
     private constructor() {
-        this.accessTokenExpireTime = (process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h') as `${number}${'s' | 'm' | 'h' | 'd'}`;
+        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '7600000';
         this.jwtKey = process.env.JWT_KEY ?? 'kvajfvhjabdsjhvajdhvjsvbsmn';
         this.clubService = ClubService.getInstance();
         this.FRONTEND_URI = process.env.FRONTEND_URI || "https://your-frontend-url.com";
@@ -100,16 +99,16 @@ class ClubAuthService {
         try {
             const pubKey = this.jwtKey;
             const decoded = jwt.verify(token, pubKey) as {email: string, id: string, type: string};
-            
+
             if (decoded.type !== 'club') {
                 throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: Not a valid club token"};
             }
-            
+
             const club = await ClubPersistence.getClubById(decoded.id);
             if (!club) {
                 throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: Club not found"};
             }
-            
+
             return decoded;
         } catch(err) {
             const error = err as any;
@@ -130,12 +129,7 @@ class ClubAuthService {
     private jwtSign = (userId: string, email: string, expiryTime: string) => {
         const payload = {id: userId, email: email, type: 'club'};
         const key = this.jwtKey;
-        const options: SignOptions = {
-            issuer: 'byPS',
-            expiresIn: expiryTime
-        };
-
-        return jwt.sign(payload, this.jwtKey, options);
+        return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: Number(expiryTime) });
     }
 }
 

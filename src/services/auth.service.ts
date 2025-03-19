@@ -10,7 +10,6 @@ import UserPersistence from "../database/persistence/user.persistence";
 import { ValidationErrorItem } from "sequelize";
 import { HTTP_STATUS } from "../constants/http.constants";
 import UserDetailDtoMapper from "../mapper/userDetailDto.mapper";
-import { SignOptions } from 'jsonwebtoken';
 
 class AuthService {
     private static instance: AuthService;
@@ -24,7 +23,7 @@ class AuthService {
     }
 
     private constructor() {
-        this.accessTokenExpireTime = (process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '12h') as `${number}${'s' | 'm' | 'h' | 'd'}`;
+        this.accessTokenExpireTime = process.env.ACCESS_TOKEN_EXPIRE_TIME ?? '7600000';
         this.jwtKey = process.env.JWT_KEY ?? "kvajfvhjabdsjhvajdhvjsvbsmn";
         this.userService = UsersService.getInstance();
     }
@@ -66,7 +65,7 @@ class AuthService {
         if (!userDetail) throw new NotFoundException('User');
 
         const accessToken = this.signAccessToken(user.id.toString(), userAuth.email);
-        
+
         return {userDetail: UserDetailDtoMapper.toUserDetailDto(userDetail), accessToken};
     }
 
@@ -74,16 +73,16 @@ class AuthService {
         try {
             const pubKey = this.jwtKey;
             const decoded = jwt.verify(token, pubKey) as {email: string, id: string, type: string};
-            
+
             if (decoded.type !== 'user') {
                 throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: Not a valid user token"};
             }
-            
+
             const user = await UserPersistence.getUserById(decoded.id);
             if (!user) {
                 throw {status: HTTP_STATUS.FORBIDDEN, message: "Access forbidden: User not found"};
             }
-            
+
             return decoded;
         } catch(err) {
             const error = err as any;
@@ -109,12 +108,10 @@ class AuthService {
             throw new Error("JWT_KEY is missing or invalid");
         }
 
-        const options: SignOptions = {
-            issuer: 'byPS',
-            expiresIn: expiryTime
-        };
-
-        return jwt.sign(payload, this.jwtKey, options);
+        return jwt.sign(payload, this.jwtKey, {
+            expiresIn: Number(expiryTime),
+            issuer: "byPS",
+        });
     };
 
 }
