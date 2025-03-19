@@ -10,7 +10,8 @@ export default interface IEventDetailDto {
     owner: { 
         firstName: string,
         id: number,
-        email: string
+        email: string,
+        address?: string
     }
     status: number;
     organizerType: string;

@@ -13,7 +13,8 @@ export default class EventDetailDtoMapper {
             : {
                 firstName: event.clubOwner?.name || '',
                 id: event.clubOwner?.id || 0,
-                email: event.clubOwner?.email || ''
+                email: event.clubOwner?.email || '',
+                address: event.clubOwner?.location?.address || ''
             };
 
         const eventDetailDto: IEventDetailDto = {

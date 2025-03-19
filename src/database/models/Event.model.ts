@@ -25,6 +25,9 @@ export interface IEventDetail {
         name: string;
         id: number;
         email: string;
+        location?: {
+            address: string;
+        };
     };
 }
 

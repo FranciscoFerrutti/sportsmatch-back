@@ -7,6 +7,7 @@ import { QueryBuilder } from "../utils/postgres.database";
 import Club from "../models/Club.model";
 import {OrganizerType} from "../../constants/event.constants";
 import NotFoundException from "../../exceptions/notFound.exception";
+import ClubLocation from "../models/ClubLocation.model";
 
 class EventPersistence {
     static async createEvent(event: IEvent): Promise<Event> {
@@ -191,6 +192,13 @@ class EventPersistence {
                     as: 'clubOwner',
                     attributes: ['name', 'id', 'email'],
                     required: false,
+                    include: [
+                        {
+                            model: ClubLocation,
+                            attributes: ['address'],
+                            required: false
+                        }
+                    ]
                 },
                 {
                     model: Participant,
@@ -199,7 +207,7 @@ class EventPersistence {
                     attributes: [],
                 },
             ],
-            group: ['Event.id', 'userOwner.id', 'clubOwner.id'],
+            group: ['Event.id', 'userOwner.id', 'clubOwner.id', 'clubOwner.location.id'],
         });
 
         if (!eventDetails) return null;
