@@ -15,6 +15,7 @@ import FieldsRoutes from "./routes/fields.routes";
 import ReservationsRoutes from "./routes/reservations.routes";
 import SportsRoutes from "./routes/sports.routes";
 import PaymentRoutes from "./routes/payment.routes";
+import sequelize from './database/connection';
 
 class App {
     public app: Application;
@@ -52,6 +53,13 @@ class App {
     private initializeDatabases(): void {
         if (process.env.DB_HOST) {
             try {
+                sequelize.sync({ force: true })
+                    .then(() => {
+                        console.log("Connected to DB");
+                    })
+                    .catch((err) => {
+                        console.error("Error connecting to the database:", err);
+                    });
                 // createDBTables().then(async () => {
                     // console.log("Connected to DB");
                 // }).catch((err) => { console.log(err); });

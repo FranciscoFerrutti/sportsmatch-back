@@ -7,6 +7,8 @@ dotenv.config();
 let sequelize: Sequelize;
 
 if(process.env.IS_LOCAL == "true"){
+    console.log("Using port Number: " + (process.env.DB_PORT));
+    console.log(__dirname + '/models');
     sequelize = new Sequelize({
         database: process.env.DB_NAME!,
         dialect: 'postgres',
@@ -14,8 +16,9 @@ if(process.env.IS_LOCAL == "true"){
         password: process.env.DB_PASS!,
         host: process.env.DB_HOST!,
         port: +(process.env.DB_PORT ?? 5433),
-        storage: ':memory:',
         models: [__dirname + '/models'],
+        sync: { force: true,  },
+        logging: console.log,
     });
 } else {
     if (!process.env.DATABASE_URL) {
