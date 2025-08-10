@@ -29,10 +29,19 @@ class App {
 
         this.initializeDatabases();
 
+        console.log("Initializing services...");
         this.initializeServices();
 
+        console.log("Initializing routes...");
+
         this.initializeRoutes();
+
+        console.log("Initializing error handling...");
+
         this.initializeErrorHandling();
+
+        console.log("Initializing Swagger...");
+
         this.initializeSwaggerApp();
     }
 

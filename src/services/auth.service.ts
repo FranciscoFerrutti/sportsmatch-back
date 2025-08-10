@@ -32,15 +32,21 @@ class AuthService {
         let transaction;
         try {
             transaction = await sequelize.transaction();
+            console.log("Creating auth for email:", email);
 
             const passwordHash = await hashPassword(password);
+            console.log("Password hash for email:", email, "is", passwordHash.toString());
 
             await AuthPersistence.createAuth(email, passwordHash.toString(), transaction);
+            console.log("Auth created for email:", email);
 
             await this.userService.createUser(email, firstName, lastName, phoneNumber, birthdate, transaction);
+            console.log("User created for email:", email);
 
             await transaction.commit();
+            console.log("Transaction committed for email:", email);
         } catch (err) {
+            console.error("Error creating auth for email:", email, "Error:", err);
             if (transaction) await transaction.rollback();
             if (err.errors && err.errors[0]) {
                 const error = err.errors[0] as ValidationErrorItem;

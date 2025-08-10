@@ -58,6 +58,7 @@ function initializeSwagger(app: Application) {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerAPI);
   });
+  console.log('Swagger initialized at /docs');
 }
 
 export default initializeSwagger;

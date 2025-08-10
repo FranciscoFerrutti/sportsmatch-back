@@ -39,6 +39,7 @@ class AuthController {
         const email: string = req.body.email;
         
         try {
+            console.log("Creating auth for email:", email);
             await this.authService.createAuth(email.toLowerCase(), req.body.password, req.body.firstName, req.body.lastName, req.body.phoneNumber, req.body.birthdate);
             res.status(HTTP_STATUS.CREATED).send();
         } catch (err) {
