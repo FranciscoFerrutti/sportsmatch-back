@@ -16,6 +16,7 @@ import ReservationsRoutes from "./routes/reservations.routes";
 import SportsRoutes from "./routes/sports.routes";
 import PaymentRoutes from "./routes/payment.routes";
 import sequelize from './database/connection';
+import Sport from './database/models/Sport.model';
 
 class App {
     public app: Application;
@@ -62,9 +63,11 @@ class App {
     private initializeDatabases(): void {
         if (process.env.DB_HOST) {
             try {
-                sequelize.sync({ force: true })
-                    .then(() => {
+                sequelize.sync()
+                    .then(async() => {
                         console.log("Connected to DB");
+                        await Sport.seedSports();
+                        console.log("Deportes iniciales insertados");
                     })
                     .catch((err) => {
                         console.error("Error connecting to the database:", err);

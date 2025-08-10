@@ -30,6 +30,14 @@ class Sport extends Model {
     toString() {
         return `id: ${this.id} name: ${this.name}`
     }
+
+    // deportes iniciales
+    static async seedSports() {
+        const sports = ['football', 'tennis', 'hockey', 'basket'];
+        for (const name of sports) {
+            await Sport.findOrCreate({ where: { name } });
+        }
+    }
 }
 
 export default Sport;
