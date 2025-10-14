@@ -45,6 +45,7 @@ Para ejecutar la aplicación localmente, sigue estos pasos:
 | `FRONTEND_URI`                 | URL del frontend |
 | `S3_ACCESS_KEY`                | Clave de acceso a Amazon S3 |
 | `S3_SECRET_KEY`                | Clave secreta de Amazon S3 |
+| `S3_SESSION_TOKEN`             | Token de sesión para Amazon S3 (si aplica) |
 | `S3_REGION`                    | Región del bucket de Amazon S3 |
 | `S3_BUCKET`                    | Nombre del bucket en Amazon S3 |
 
