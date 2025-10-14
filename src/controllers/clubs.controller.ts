@@ -156,8 +156,10 @@ class ClubsController{
             if (!presignedPutUrl) {
                 throw new Error("No se pudo generar la URL pre-firmada.");
             }
-            // Construir la URL pública de la imagen en S3
-            const imageUrl = `https://new-sportsmatch-user-pictures-2025.s3.amazonaws.com/${imageKey}`;
+            // Construir la URL pública de la imagen en S3 usando variables de entorno
+            const bucket = process.env.S3_BUCKET || 'new-sportsmatch-user-pictures-2025';
+            const region = process.env.S3_REGION || 'us-east-1';
+            const imageUrl = `https://${bucket}.s3.${region}.amazonaws.com/${imageKey}`;
             // Guardar la URL de la imagen en la base de datos
             await this.clubService.updateClub(clubId, undefined, undefined, imageUrl);
             console.log(`✅ Imagen URL guardada en la base de datos: ${imageUrl}`);

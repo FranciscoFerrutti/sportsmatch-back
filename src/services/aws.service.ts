@@ -9,13 +9,11 @@ const credentials = {
 class AWSService {
     private static instance: AWSService;
     private readonly URL_TIMEOUT = 3600; // seconds
-    private readonly PROFILE_PICTURES_BUCKET = "new-sportsmatch-user-pictures-2025";
+    private readonly PROFILE_PICTURES_BUCKET = process.env.S3_BUCKET ?? "new-sportsmatch-user-pictures-2025";
     private s3: AWS.S3;
     private static tmp = "tmp";
 
     constructor() {
-        console.log("Initializing AWS Service...");
-        console.log("Credentials:", credentials);
         AWS.config.update({credentials: credentials, region: 'us-east-1'});
         this.s3 = new AWS.S3({
             region: 'us-east-1',

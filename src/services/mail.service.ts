@@ -17,6 +17,13 @@ export class MailService {
     private constructor() {
     }
 
+    private static getImageUrl(): string {
+        const bucket = process.env.S3_BUCKET || 'new-sportsmatch-user-pictures-2025';
+        const region = process.env.S3_REGION || 'us-east-1';
+        // Support both virtual-hosted–style and path-style; keep virtual-hosted style used previously
+        return `https://${bucket}.s3.${region}.amazonaws.com/logo_square.png`;
+    }
+
     //CANCEL RESERVATION
     public static async sendUserReservationDeclined(user: string, reservationId: number, club: string, date: string,month: string, hours: string) {
         const subject = "Tu rerserva fue cancelada";
@@ -29,7 +36,8 @@ export class MailService {
             message: "Lamentamos informarte que tu reserva en " + club + " para la fecha "+  date +"/"+month +" a las " + hours +"hs fue cancelada. " +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -47,7 +55,8 @@ export class MailService {
                 "Te devolvimos $" + amount +". Lo veras reflejado el monto en los detalles de tu proxima factura o en tu cuenta corriente en caso de débito." +
                 "Estas a tiempo reservar otra cancha!",
             clickme: "Crear evento",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -64,7 +73,8 @@ export class MailService {
             message: "La reserva en la cancha nombre: " + field + " para la fecha "+  date +"/"+month + " a las " + hours + "hs fue cancelada." +
                 "Como el usuario ya habia abonado la reserva le devolvimos $" + amount + ".",
             clickme: "Ver reservas",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -85,7 +95,8 @@ export class MailService {
                 "hs. El dia del evento podras cancelar el monto restante en el club." +
                 "\n Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña.",
             clickme: "Ver reserva",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -101,7 +112,8 @@ export class MailService {
         const html = template({
             message: "Recibimos $" + amount + " del pago de la seña para la cancha nombre: " + field + " en la fecha "+  date +"/"+month + " a las " + hours + "hs",
             clickme: "Ver reserva",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -122,7 +134,8 @@ export class MailService {
                 "Abona el monto de la seña para completar tu reserva. " +
                 "Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña.",
             clickme: "Completar reserva",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -142,7 +155,8 @@ export class MailService {
                 "Recibiras otro mail cuando la misma sea aceptada por el club para enviar el pago de la seña. " +
                 "Recorda que si cancelas con 24hs de anticipación, se te devolvera la seña",
             clickme: "Ver reserva",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -157,7 +171,8 @@ export class MailService {
         const html = template({
             message: "Tenes una nueva reserva para la cancha nombre: "+ field + " el dia " + date.split(' ')[0] + ". Recordá aceptarla desde la web en la sección “Reservas”",
             clickme: "Ver reservas",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(user, subject, html);
@@ -176,7 +191,8 @@ export class MailService {
             message: "¡Bienvenido a SportsMatch " + clubName + "! " +
                 "Para completar tu registro, por favor verifica tu dirección de email haciendo click en el botón de abajo. ",
             clickme: "Verificar Email",
-            url: joinUrl
+            url: joinUrl,
+            imageUrl: this.getImageUrl()
         });
 
         await this.sendMail(email, subject, html);
