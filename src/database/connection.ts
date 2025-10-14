@@ -17,7 +17,7 @@ if(process.env.IS_LOCAL == "true"){
         host: process.env.DB_HOST!,
         port: +(process.env.DB_PORT ?? 5433),
         models: [__dirname + '/models'],
-        sync: { force: true,  },
+        sync: { force: process.env.DB_SYNC_FORCE === "true" },
         logging: console.log,
     });
 } else {

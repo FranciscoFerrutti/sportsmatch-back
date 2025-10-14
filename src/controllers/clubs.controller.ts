@@ -12,11 +12,11 @@ import AWSService from "../services/aws.service";
 @autobind
 class ClubsController{
     private readonly clubService: ClubService;
-    //private readonly awsService: AWSService;
+    private readonly awsService: AWSService;
 
     constructor() {
         this.clubService = ClubService.getInstance();
-        //this.awsService = AWSService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -115,7 +115,7 @@ class ClubsController{
         }
     }
 
-    /*
+    
     @document(SwaggerEndpointBuilder.create()
         .responses({ "200": { description: "OK", schema: { type: "object" } } })
         .build()
@@ -157,7 +157,7 @@ class ClubsController{
                 throw new Error("No se pudo generar la URL pre-firmada.");
             }
             // Construir la URL pública de la imagen en S3
-            const imageUrl = `https://new-sportsmatch-user-pictures.s3.amazonaws.com/${imageKey}`;
+            const imageUrl = `https://new-sportsmatch-user-pictures-2025.s3.amazonaws.com/${imageKey}`;
             // Guardar la URL de la imagen en la base de datos
             await this.clubService.updateClub(clubId, undefined, undefined, imageUrl);
             console.log(`✅ Imagen URL guardada en la base de datos: ${imageUrl}`);
@@ -169,7 +169,7 @@ class ClubsController{
             next(err);
         }
     }
-     */
+
 }
 
 export default ClubsController;

@@ -13,11 +13,11 @@ import GenericException from "../exceptions/generic.exception";
 @autobind
 class UsersController {
     private readonly usersService: UsersService;
-    //private readonly awsService: AWSService;
+    private readonly awsService: AWSService;
 
     constructor() {
         this.usersService = UsersService.getInstance();
-        //this.awsService = AWSService.getInstance();
+        this.awsService = AWSService.getInstance();
     }
 
     @document(SwaggerEndpointBuilder.create()
@@ -124,12 +124,12 @@ class UsersController {
             next(err);
         }
     }
-    /*
+
     public async getUserImage(req: Request, res: Response, next: NextFunction) {
         const userId = req.params.userId;
         
         try {
-            const presignedGetUrl = this.awsService.getPresignedGetUrl(`userid:${userId}`);
+            const presignedGetUrl = this.awsService.getPresignedGetUrl(`userid_${userId}`);
             res.status(HTTP_STATUS.OK).send({ presignedGetUrl });
         } catch (err) {
             next(err);
@@ -141,13 +141,13 @@ class UsersController {
         
         try {
             const contentType = req.headers['content-type'] || 'image/png';
-            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid:${userId}`,contentType);
+            const presignedPutUrl = this.awsService.getPresignedPostUrl(`userid_${userId}`,contentType);
             res.status(HTTP_STATUS.OK).send({ presignedPutUrl });
         } catch (err) {
             next(err);
         }
     }
-     */
+
 }
 
 export default UsersController;
