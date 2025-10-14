@@ -10,13 +10,14 @@ class AWSService {
     private static instance: AWSService;
     private readonly URL_TIMEOUT = 3600; // seconds
     private readonly PROFILE_PICTURES_BUCKET = process.env.S3_BUCKET ?? "new-sportsmatch-user-pictures-2025";
+    private readonly PROFILE_PICTURES_REGION = process.env.S3_REGION ?? "us-east-1";
     private s3: AWS.S3;
     private static tmp = "tmp";
 
     constructor() {
-        AWS.config.update({credentials: credentials, region: 'us-east-1'});
+        AWS.config.update({credentials: credentials, region: this.PROFILE_PICTURES_REGION});
         this.s3 = new AWS.S3({
-            region: 'us-east-1',
+            region: this.PROFILE_PICTURES_REGION,
             accessKeyId: process.env.S3_ACCESS_KEY,
             secretAccessKey: process.env.S3_SECRET_KEY,
             sessionToken: process.env.S3_SESSION_TOKEN
