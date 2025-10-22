@@ -24,7 +24,7 @@ if(process.env.IS_LOCAL == "true"){
     if (!process.env.DATABASE_URL) {
         throw new Error("❌ DATABASE_URL is not set in environment variables.");
     }
-
+    console.log("Loading models from:", path.join(__dirname, "./models"));
     sequelize = new Sequelize(process.env.DATABASE_URL, {
         dialect: "postgres",
         dialectOptions: {
@@ -34,8 +34,24 @@ if(process.env.IS_LOCAL == "true"){
             },
         },
         models: [path.join(__dirname, "./models")],
+        sync: { force: true },
         logging: console.log,
+        define: {
+            schema: 'public',
+        },
+        schema: 'public',
     });
+    console.log("Loaded models:", sequelize.modelManager.all.map(m => m.name));
+    console.log("Auth table name:", sequelize.model('Auth').getTableName());
 }
+
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection to Supabase has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+})();
 
 export default sequelize;
