@@ -34,7 +34,7 @@ if(process.env.IS_LOCAL == "true"){
             },
         },
         models: [path.join(__dirname, "./models")],
-        sync: { force: true },
+        sync: { force: false },
         logging: console.log,
         define: {
             schema: 'public',

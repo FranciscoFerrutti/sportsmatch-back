@@ -63,7 +63,7 @@ class App {
     private initializeDatabases(): void {
         if (process.env.DB_HOST) {
             try {
-                sequelize.sync({alter: true})
+                sequelize.sync({force: false})
                     .then(async() => {
                         console.log("Connected to DB");
                         await Sport.seedSports();
