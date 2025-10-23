@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Payment as MPPayment } from 'mercadopago';
+import { MercadoPagoConfig, Payment as MPPayment, Order, Preference } from 'mercadopago';
 import PaymentPersistence from '../database/persistence/payment.persistence';
 import ReservationsService from './reservations.service';
 import { PaymentStatus } from '../constants/payment.constants';
@@ -13,6 +13,8 @@ import {MailService} from "./mail.service";
 export class PaymentService {
     private static instance: PaymentService;
     private readonly client: MercadoPagoConfig;
+    private preference: Preference;
+    private order: Order;
     private payment: MPPayment;
     private paymentPersistence: PaymentPersistence;
     private reservationService: ReservationsService;
@@ -26,6 +28,8 @@ export class PaymentService {
             accessToken: token,
             options: { timeout: 5000 }
         });
+        this.preference = new Preference(this.client);
+        this.order = new Order(this.client);
         this.payment = new MPPayment(this.client);
         this.paymentPersistence = new PaymentPersistence();
         this.reservationService = reservationService;
@@ -39,7 +43,7 @@ export class PaymentService {
         return this.instance;
     }
 
-    async processPayment(userId: number, reservationId: number, paymentData: any) {
+    async createPreference(userId: number, reservationId: number): Promise<{init_point: string}> {
         const reservation = await this.reservationService.findReservationWithOwnerDetails(reservationId);
 
         if (reservation.event.userOwner?.id !== userId) {
@@ -67,51 +71,73 @@ export class PaymentService {
             });
         }
 
-        try {
-            const mpResponse = await this.payment.create({ body: paymentData });
+        const paymentRecord = await this.paymentPersistence.createPayment({
+            transactionStatus: PaymentStatus.PENDING,
+            transactionDate: new Date(),
+            transactionAmount: reservation.cost,
+            reservationId
+        });
 
-            if (!mpResponse.id || !mpResponse.status || !mpResponse.date_created || !mpResponse.transaction_amount) {
-                throw new GenericException({
-                    status: HTTP_STATUS.SERVICE_UNAVAILABLE,
-                    message: "Invalid payment response from MercadoPago",
-                    internalStatus: "INVALID_MP_RESPONSE"
-                });
+        const preference = await this.preference.create({
+            body: {
+                items: [{
+                    id: reservation.id.toString(),
+                    title: `Reserva #${reservation.id}`,
+                    quantity: 1,
+                    currency_id: 'ARS',
+                    unit_price: parseFloat(reservation.cost.toString()),
+                }],
+                external_reference: paymentRecord.id.toString(),
+                payment_methods: {
+                    installments: 1,
+                }
             }
+        })
 
-            const paymentRecord = await this.paymentPersistence.createPayment({
-                mpId: mpResponse.id,
-                transactionStatus: this.mapMPStatus(mpResponse.status),
-                transactionDate: new Date(mpResponse.date_created),
-                transactionAmount: mpResponse.transaction_amount,
-                reservationId
-            });
+        if (!preference.init_point) {
+            await this.paymentPersistence.rejectPayment(paymentRecord.id);
 
-            if (paymentRecord.transactionStatus === PaymentStatus.APPROVED) {
-                await this.reservationService.completeReservation(reservationId);
-                await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString());
-                await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString(), reservation.cost / 2);
-            }
-
-            return paymentRecord;
-
-        } catch (error) {
             throw new GenericException({
                 status: HTTP_STATUS.SERVICE_UNAVAILABLE,
-                message: "Error processing payment",
-                internalStatus: "PAYMENT_PROCESSING_ERROR"
+                message: "Invalid payment response from MercadoPago",
+                internalStatus: "INVALID_MP_RESPONSE"
             });
         }
+
+        return {init_point: preference.init_point};
     }
 
-    private mapMPStatus(mpStatus: string): PaymentStatus {
-        switch (mpStatus) {
-            case 'approved':
-                return PaymentStatus.APPROVED;
-            case 'rejected':
-                return PaymentStatus.REJECTED;
-            default:
-                return PaymentStatus.PENDING;
+    async processWebhook(notification: any) {
+        if (notification.type !== 'topic_merchant_order_wh' || notification.status !== 'closed') {
+            return;
         }
+
+        const order = await this.order.get({id: notification.id});
+
+        if (order.status !== 'closed') {
+            return;
+        }
+
+        const paymentId = parseInt(order.external_reference!, 10);
+        const payment = await this.paymentPersistence.findPaymentById(paymentId);
+
+        if (payment === null) {
+            throw new GenericException({
+                status: HTTP_STATUS.NOT_FOUND,
+                message: 'External reference not found',
+                internalStatus: 'PAYMENT_NOT_FOUND',
+            });
+        }
+
+        await this.paymentPersistence.approvePayment(paymentId, order.id!);
+
+        const reservationId = payment.reservationId;
+        const reservation = await this.reservationService.findReservation(reservationId)
+
+
+        await this.reservationService.completeReservation(reservationId);
+        await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString());
+        await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString(), reservation.cost / 2);
     }
 
     async getPaymentsByReservationId(reservationId: number, userId: number) {
@@ -176,30 +202,18 @@ export class PaymentService {
 
             console.log("Refunding payment of reservation: ", reservationId);
 
-            const response = await axios.post(`https://api.mercadopago.com/v1/payments/${payment.mpId}/refunds`, {}, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
-                    'X-Idempotency-Key': `${payment.id}-${Date.now()}`
-                }
+            const response = await this.order.refund({
+                id: payment.mpId!
             });
 
             console.log("Response from MP: ", response);
 
-            if (!response || response.status !== 201) {
-                throw new GenericException({
-                    status: HTTP_STATUS.SERVICE_UNAVAILABLE,
-                    message: "Failed to process refund",
-                    internalStatus: "REFUND_PROCESSING_ERROR"
-                });
-            }
-
 
             const refundData = {
-                refundId: response.data.id,
-                paymentId: payment.id,
-                dateCreated: new Date(response.data.date_created),
-                amountRefunded: response.data.amount_refunded_to_payer
+                refundId: response.id!,
+                paymentId: payment.id!,
+                dateCreated: new Date(),
+                amountRefunded: parseFloat(response.total_amount!)
             };
 
             return await this.refundPersistence.createRefund(refundData);

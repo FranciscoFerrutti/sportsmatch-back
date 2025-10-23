@@ -46,10 +46,11 @@ export default class Payment extends Model {
     transactionDate!: Date;
 
     @Column({
-        type: DataType.INTEGER,
+        type: DataType.STRING(256),
+        allowNull: true,
         field: 'mp_id'
     })
-    mpId!: number;
+    mpId: string | null;
 
     @ForeignKey(() => Reservation)
     @Column({

@@ -23,11 +23,11 @@ export default class Refund extends Model {
     id!: number;
 
     @Column({
-        type: DataType.INTEGER,
+        type: DataType.STRING(256),
         allowNull: false,
         field: 'refund_id'
     })
-    refundId!: number;
+    refundId!: string;
 
     @ForeignKey(() => Payment)
     @Column({

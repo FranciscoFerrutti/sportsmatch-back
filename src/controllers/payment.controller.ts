@@ -17,26 +17,55 @@ export default class PaymentController{
         this.paymentService = PaymentService.getInstance(ReservationsService.getInstance());
     }
 
-    @document(SwaggerEndpointBuilder.create()
+    @document(
+        SwaggerEndpointBuilder.create()
+        .description("Process MP webhook")
         .responses({
             "200": {
-                description: "OK",
-                schema: {
-                    type: "object",
-                }
-            }
+            description: "OK",
+            schema: { type: "object" },
+            },
         })
-        .build())
-    @validateParams(Joi.object({
-        reservationId: Joi.number().required()
-    }))
-    @HttpRequestInfo("/payments/:reservationId/process_payment", HTTP_METHODS.POST)
-    public async addPayment(req: Request, res: Response, next: NextFunction){
+        .build()
+    )
+    @HttpRequestInfo(
+        '/payments/mp-webhook',
+        HTTP_METHODS.POST
+    )
+    public async processWebhook(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = parseInt(req.user.id);
-            const reservationId = parseInt(req.params.reservationId);
-            
-            const result = await this.paymentService.processPayment(userId, reservationId, req.body);
+            await this.paymentService.processWebhook(req.body);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    @document(
+        SwaggerEndpointBuilder.create()
+        .description("Create payment preference")
+        .responses({
+            "200": {
+            description: "OK",
+            schema: { type: "object" },
+            },
+        })
+        .build()
+    )
+    @validateBody(
+        Joi.object({
+        reservationId: Joi.number().required(),
+        })
+    )
+    @HttpRequestInfo(
+        '/payments',
+        HTTP_METHODS.POST
+    )
+    public async createPreference(req: Request, res: Response, next: NextFunction) {
+        const userId = parseInt(req.user.id);
+        const reservationId = parseInt(req.body.reservationId);
+
+        try {
+            const result = await this.paymentService.createPreference(userId, reservationId);
             return res.json(result);
         } catch (error) {
             next(error);

@@ -13,13 +13,20 @@ export default class PaymentPersistence {
     }
 
     async createPayment(paymentData: {
-        mpId: number;
         transactionStatus: PaymentStatus;
         transactionDate: Date;
         transactionAmount: number;
         reservationId: number;
     }): Promise<Payment> {
-        return Payment.create(paymentData);
+        return await Payment.create(paymentData);
+    }
+
+    async approvePayment(paymentId: number, mpId: string) {
+        await Payment.update({ transactionStatus: PaymentStatus.APPROVED, mpId }, { where: { id: paymentId } });
+    }
+
+    async rejectPayment(paymentId: number) {
+        await Payment.update({ transactionStatus: PaymentStatus.REJECTED }, { where: { id: paymentId } });
     }
 
     async findByReservationId(reservationId: number): Promise<Payment[]> {
