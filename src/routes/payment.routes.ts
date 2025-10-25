@@ -14,7 +14,7 @@ export default class PaymentRoutes{
 
     public init(): void {
         this.router.use(urlencoded({ extended: true }));
-        // this.router.use(cors());
+        this.router.use(cors());
 
         this.router.post('/:reservationId/process_payment', userAuthMiddleware, this.controller.addPayment);
         this.router.get('/:reservationId', userAuthMiddleware, this.controller.getPaymentsByReservationId);

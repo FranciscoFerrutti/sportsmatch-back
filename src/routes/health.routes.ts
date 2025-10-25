@@ -14,7 +14,7 @@ export default class HealthRoutes {
 
     public init(): void {
         this.router.use(urlencoded({ extended: true }));
-        // this.router.use(cors());
+        this.router.use(cors());
 
         this.router.post('/', this.controller.healthCheck);
         this.router.get('/', this.controller.healthCheck);
