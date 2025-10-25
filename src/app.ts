@@ -59,13 +59,7 @@ class App {
             ];
 
             this.app.use(cors({
-            origin: function (origin, callback) {
-                if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-                } else {
-                callback(new Error('CORS not allowed for this origin: ' + origin));
-                }
-            },
+            origin: '*',
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization', 'c-api-key', 'c-basic-auth'],
             exposedHeaders: ['c-api-key', 'c-basic-auth'],
