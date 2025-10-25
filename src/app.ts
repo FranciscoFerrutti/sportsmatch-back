@@ -50,11 +50,28 @@ class App {
         if (this.setBasicConfig) {
             this.app.use(express.json({ limit: '50mb' }));
             this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
-            this.app.use(cors(
-                {
-                    exposedHeaders: ['c-api-key'],
+            const allowedOrigins = [
+            'http://localhost:5173',
+            'https://sportsmatch-web-pi.vercel.app',
+            'https://sportsmatch-web-franciscoferruttis-projects.vercel.app',
+            'https://sportsmatch-web-git-main-franciscoferruttis-projects.vercel.app',
+            'https://sportsmatch-2txtx47kv-franciscoferruttis-projects.vercel.app'
+            ];
+
+            this.app.use(cors({
+            origin: function (origin, callback) {
+                if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+                } else {
+                callback(new Error('CORS not allowed for this origin: ' + origin));
                 }
-            ));
+            },
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'c-api-key', 'c-basic-auth'],
+            exposedHeaders: ['c-api-key', 'c-basic-auth'],
+            credentials: true,
+            }));
+
         }
 
         this.app.set('trust proxy', 1);
