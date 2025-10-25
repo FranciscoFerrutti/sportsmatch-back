@@ -3,6 +3,7 @@ import { urlencoded } from 'body-parser';
 import userAuthMiddleware from "../middlewares/jwt.middleware";
 import clubAuthMiddleware from "../middlewares/clubauth.middleware";
 import PaymentController from "../controllers/payment.controller";
+import cors from 'cors';
 
 export default class PaymentRoutes{
     public router: Router = Router({ mergeParams: true });
