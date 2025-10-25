@@ -48,6 +48,7 @@ class App {
 
     private configureExpress(): void {
         if (this.setBasicConfig) {
+            this.app.options('*', cors());
             this.app.use(express.json({ limit: '50mb' }));
             this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
             const allowedOrigins = [
@@ -59,12 +60,20 @@ class App {
             ];
 
             this.app.use(cors({
-            origin: '*',
-            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'c-api-key', 'c-basic-auth'],
-            exposedHeaders: ['c-api-key', 'c-basic-auth'],
-            credentials: true,
+                origin: (origin, callback) => {
+                    callback(null, origin || '*');
+                },
+                methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'Authorization', 'c-api-key', 'c-basic-auth'],
+                exposedHeaders: ['c-api-key', 'c-basic-auth'],
+                credentials: true,
             }));
+            this.app.use((req, res, next) => {
+                console.log('Request origin:', req.headers.origin);
+                next();
+            });
+
+
 
         }
 
