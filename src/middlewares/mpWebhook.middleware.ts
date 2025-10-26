@@ -39,16 +39,19 @@ const MpWebhookMiddleware = (error: HttpException, request: Request, response: R
     const xSignature = headers['x-signature'];
     const xRequestId = headers['x-request-id'];
     if (typeof xSignature !== 'string' || typeof xRequestId !== 'string') {
+      console.warn('missing signature');
       throw new UnauthorizedException('missing signature');
     }
 
     const signature = parseXSignature(xSignature);
     if (!signature) {
+      console.warn('malformed signature');
       throw new UnauthorizedException('malformed signature');
     }
 
     const dataId = query['data.id'];
     if (typeof dataId !== 'string') {
+      console.warn('missing data.id');
       throw new UnauthorizedException('missing data.id');
     }
 
@@ -58,8 +61,11 @@ const MpWebhookMiddleware = (error: HttpException, request: Request, response: R
       .digest('hex');
 
     if (digest !== signature.v1) {
+      console.warn('invalid signature');
       throw new UnauthorizedException('invalid signature');
     }
+
+    console.log('verified signature');
 
     next();
 };
