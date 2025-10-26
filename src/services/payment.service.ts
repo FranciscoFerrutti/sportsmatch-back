@@ -132,12 +132,12 @@ export class PaymentService {
         await this.paymentPersistence.approvePayment(paymentId, order.id!);
 
         const reservationId = payment.reservationId;
-        const reservation = await this.reservationService.findReservation(reservationId)
+        const reservation = await this.reservationService.findReservation(reservationId);
 
 
         await this.reservationService.completeReservation(reservationId);
-        await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString());
-        await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString(), reservation.cost / 2);
+        // await MailService.sendReservationCompleted(reservation.event.userOwner.email, reservationId, reservation.field.club.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString());
+        // await MailService.sendClubReservationCompleted(reservation.field.club.email, reservationId, reservation.field.name, reservation.event.schedule.getDate().toString(), (reservation.event.schedule.getMonth()+1).toString(),reservation.event.schedule.getHours().toString(), reservation.cost / 2);
     }
 
     async getPaymentsByReservationId(reservationId: number, userId: number) {

@@ -34,7 +34,6 @@ export default class PaymentController{
     )
     public async processWebhook(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log(req.body);
             await this.paymentService.processWebhook(req.body);
             return res.sendStatus(HTTP_STATUS.OK);
         } catch (error) {
