@@ -21,7 +21,7 @@ export default class PaymentPersistence {
         return await Payment.create(paymentData);
     }
 
-    async approvePayment(paymentId: number, mpId: string) {
+    async approvePayment(paymentId: number, mpId: number) {
         await Payment.update({ transactionStatus: PaymentStatus.APPROVED, mpId }, { where: { id: paymentId } });
     }
 

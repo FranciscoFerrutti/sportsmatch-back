@@ -2,7 +2,7 @@ import Refund from '../models/Refund.model';
 
 export default class RefundPersistence {
     async createRefund(refundData: {
-        refundId: string;
+        refundId: number;
         paymentId: number;
         dateCreated: Date;
         amountRefunded: number;

@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Payment as MPPayment, Order, Preference } from 'mercadopago';
+import { MercadoPagoConfig, MerchantOrder, PaymentRefund, Preference } from 'mercadopago';
 import PaymentPersistence from '../database/persistence/payment.persistence';
 import ReservationsService from './reservations.service';
 import { PaymentStatus } from '../constants/payment.constants';
@@ -14,8 +14,8 @@ export class PaymentService {
     private static instance: PaymentService;
     private readonly client: MercadoPagoConfig;
     private preference: Preference;
-    private order: Order;
-    private payment: MPPayment;
+    private merchantOrder: MerchantOrder;
+    private refund: PaymentRefund;
     private paymentPersistence: PaymentPersistence;
     private reservationService: ReservationsService;
     private refundPersistence: RefundPersistence;
@@ -29,8 +29,8 @@ export class PaymentService {
             options: { timeout: 5000 }
         });
         this.preference = new Preference(this.client);
-        this.order = new Order(this.client);
-        this.payment = new MPPayment(this.client);
+        this.merchantOrder = new MerchantOrder(this.client);
+        this.refund = new PaymentRefund(this.client);
         this.paymentPersistence = new PaymentPersistence();
         this.reservationService = reservationService;
         this.refundPersistence = new RefundPersistence();
@@ -112,7 +112,7 @@ export class PaymentService {
             return;
         }
 
-        const order = await this.order.get({id: notification.id});
+        const order = await this.merchantOrder.get({merchantOrderId: notification.id});
 
         if (order.status !== 'closed') {
             return;
@@ -202,18 +202,17 @@ export class PaymentService {
 
             console.log("Refunding payment of reservation: ", reservationId);
 
-            const response = await this.order.refund({
-                id: payment.mpId!
-            });
-
-            console.log("Response from MP: ", response);
-
+            const order = await this.merchantOrder.get({merchantOrderId: payment.mpId!});
+            for (const orderPayment of order.payments!) {
+                const response = await this.refund.create({payment_id: orderPayment.id!});
+                console.log("Response from MP: ", response);
+            }
 
             const refundData = {
-                refundId: response.id!,
+                refundId: order.id!,
                 paymentId: payment.id!,
                 dateCreated: new Date(),
-                amountRefunded: parseFloat(response.total_amount!)
+                amountRefunded: order.total_amount!,
             };
 
             return await this.refundPersistence.createRefund(refundData);
