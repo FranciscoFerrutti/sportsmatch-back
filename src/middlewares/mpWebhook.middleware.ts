@@ -1,8 +1,7 @@
-import { NextFunction, Request, Response } from 'express';
-import HttpException from '../exceptions/http.exception';
-import UnauthorizedException from '../exceptions/unauthorized.exception';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 import { createHmac } from 'node:crypto';
+import { HTTP_STATUS } from '../constants/http.constants';
 
 function parseXSignature(
   xSignature: string,
@@ -32,27 +31,27 @@ function parseXSignature(
   return { ts: tsKeyValue[1], v1: v1KeyValue[1] };
 }
 
-const MpWebhookMiddleware = (error: HttpException, request: Request, response: Response, next: NextFunction): void => {
-    const headers = request.headers;
-    const query = request.query;
+const MpWebhookMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+    const headers = req.headers;
+    const query = req.query;
 
     const xSignature = headers['x-signature'];
     const xRequestId = headers['x-request-id'];
     if (typeof xSignature !== 'string' || typeof xRequestId !== 'string') {
       console.warn('missing signature');
-      throw new UnauthorizedException('missing signature');
+      return res.sendStatus(HTTP_STATUS.UNAUTHORIZED);
     }
 
     const signature = parseXSignature(xSignature);
     if (!signature) {
       console.warn('malformed signature');
-      throw new UnauthorizedException('malformed signature');
+      return res.sendStatus(HTTP_STATUS.UNAUTHORIZED);
     }
 
     const dataId = query['data.id'];
     if (typeof dataId !== 'string') {
       console.warn('missing data.id');
-      throw new UnauthorizedException('missing data.id');
+      return res.sendStatus(HTTP_STATUS.UNAUTHORIZED);
     }
 
     const manifest = `id:${dataId};request-id:${xRequestId};ts:${signature.ts};`;
@@ -62,7 +61,7 @@ const MpWebhookMiddleware = (error: HttpException, request: Request, response: R
 
     if (digest !== signature.v1) {
       console.warn('invalid signature');
-      throw new UnauthorizedException('invalid signature');
+      return res.sendStatus(HTTP_STATUS.UNAUTHORIZED);
     }
 
     console.log('verified signature');
