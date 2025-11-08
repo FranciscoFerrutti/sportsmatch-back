@@ -38,6 +38,7 @@ Para ejecutar la aplicación localmente, sigue estos pasos:
 | `IS_LOCAL`                     | Indica si el entorno es local (`true` o `false`) |
 | `DB_SSL`                       | Habilita la conexión segura a la base de datos |
 | `MERCADO_PAGO_ACCESS_TOKEN`    | Token de acceso de Mercado Pago |
+| `MERCADO_PAGO_WEBHOOK_SECRET`  | Secreto de validación webhook de Mercado Pago |
 | `DATABASE_URL`                 | URL de conexión completa a la base de datos |
 | `MAIL_HOST`                    | Servidor SMTP para correos |
 | `MAIL_USERNAME`                | Usuario de la cuenta de correo |
